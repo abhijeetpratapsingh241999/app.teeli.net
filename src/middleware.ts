@@ -2,8 +2,17 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  // Skip middleware if environment variables are not set (development/demo mode)
+  const isDashboard = request.nextUrl.pathname.startsWith("/dashboard") || 
+                      request.nextUrl.pathname.startsWith("/project") ||
+                      request.nextUrl.pathname.startsWith("/settings");
+  const isAuthPage = request.nextUrl.pathname.startsWith("/login") || 
+                     request.nextUrl.pathname.startsWith("/signup");
+
+  // If Supabase is not configured, redirect dashboard to login
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    if (isDashboard) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
     return NextResponse.next();
   }
 
@@ -36,12 +45,7 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const isAuthPage = request.nextUrl.pathname.startsWith("/login");
-  const isDashboard = request.nextUrl.pathname.startsWith("/dashboard") || 
-                      request.nextUrl.pathname.startsWith("/project") ||
-                      request.nextUrl.pathname.startsWith("/settings");
-
-  // Redirect authenticated users away from login
+  // Redirect authenticated users away from auth pages
   if (isAuthPage && user) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
