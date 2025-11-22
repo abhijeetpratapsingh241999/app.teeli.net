@@ -1,5 +1,22 @@
 export interface SceneConfig {
-  environment?: string;
+  camera?: {
+    fov?: number;
+    isOrthographic?: boolean;
+  };
+  environment?: {
+    preset?: string;
+    rotation?: number;
+    showBackground?: boolean;
+    backgroundColor?: string;
+  } | string;
+  lighting?: {
+    intensity?: number;
+  };
+  settings?: {
+    gridVisible?: boolean;
+    autoRotate?: boolean;
+    enableEffects?: boolean;
+  };
   showGrid?: boolean;
   autoRotate?: boolean;
   showBackground?: boolean;
@@ -10,6 +27,8 @@ export interface SceneConfig {
   lightIntensity?: number;
   materialColors?: Record<string, string>;
   annotations?: Array<{ id: string; position: [number, number, number]; text: string; author: string }>;
+  measurements?: Array<{ id: string; start: [number, number, number]; end: [number, number, number]; distance: number }>;
+  timestamp?: string;
 }
 
 export interface Project {
