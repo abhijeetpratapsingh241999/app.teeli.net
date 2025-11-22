@@ -2,6 +2,22 @@
 
 ```
 app.teeli.net/
+├── amplify
+│   ├── backend
+│   │   ├── awscloudformation
+│   │   │   └── build
+│   │   ├── hosting
+│   │   │   └── amplifyhosting
+│   │   │       └── amplifyhosting-template.json
+│   │   ├── types
+│   │   │   └── amplify-dependent-resources-ref.d.ts
+│   │   ├── backend-config.json
+│   │   └── tags.json
+│   ├── hooks
+│   │   └── README.md
+│   ├── cli.json
+│   ├── README.md
+│   └── team-provider-info.json
 ├── public
 │   ├── file.svg
 │   ├── globe.svg
@@ -10,35 +26,219 @@ app.teeli.net/
 │   └── window.svg
 ├── src
 │   ├── app
+│   │   ├── (auth)
+│   │   │   ├── login
+│   │   │   │   └── page.tsx
+│   │   │   ├── signup
+│   │   │   │   └── page.tsx
+│   │   │   └── layout.tsx
 │   │   ├── (dashboard)
-│   │   │   ├── layout.tsx
-│   │   │   └── page.tsx
+│   │   │   ├── dashboard
+│   │   │   │   └── page.tsx
+│   │   │   ├── settings
+│   │   │   │   └── page.tsx
+│   │   │   └── layout.tsx
 │   │   ├── (marketing)
+│   │   │   ├── demo
+│   │   │   │   └── page.tsx
+│   │   │   ├── features
+│   │   │   │   └── page.tsx
+│   │   │   ├── pricing
+│   │   │   │   └── page.tsx
+│   │   │   ├── privacy
+│   │   │   │   └── page.tsx
+│   │   │   ├── terms
+│   │   │   │   └── page.tsx
 │   │   │   ├── layout.tsx
 │   │   │   └── page.tsx
+│   │   ├── (viewer)
+│   │   │   ├── project
+│   │   │   │   └── [id]
+│   │   │   │       └── page.tsx
+│   │   │   ├── FULLSCREEN_LAYOUT.md
+│   │   │   └── layout.tsx
+│   │   ├── analytics
+│   │   │   └── page.tsx
+│   │   ├── api
+│   │   │   └── render
+│   │   │       ├── status
+│   │   │       │   └── [id]
+│   │   │       └── route.ts
+│   │   ├── auth
+│   │   │   └── callback
+│   │   │       └── route.ts
+│   │   ├── share
+│   │   │   └── [id]
+│   │   │       └── page.tsx
+│   │   ├── view
+│   │   │   └── [id]
+│   │   │       └── page.tsx
 │   │   ├── favicon.ico
 │   │   ├── globals.css
 │   │   └── layout.tsx
 │   ├── components
 │   │   ├── layout
+│   │   │   ├── DashboardHeader.tsx
 │   │   │   ├── Footer.tsx
-│   │   │   └── Navbar.tsx
-│   │   └── ui
-│   │       └── button.tsx
+│   │   │   ├── Navbar.tsx
+│   │   │   └── Sidebar.tsx
+│   │   ├── ui
+│   │   │   ├── badge.tsx
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── dialog.tsx
+│   │   │   ├── dropdown-menu.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── label.tsx
+│   │   │   ├── progress.tsx
+│   │   │   ├── select.tsx
+│   │   │   ├── slider.tsx
+│   │   │   └── tabs.tsx
+│   │   ├── ClientOnly.tsx
+│   │   └── ErrorBoundary.tsx
 │   ├── features
+│   │   ├── analytics
+│   │   │   └── components
+│   │   │       ├── AnalyticsCard.tsx
+│   │   │       └── AnalyticsDashboard.tsx
 │   │   ├── auth
+│   │   │   ├── actions.ts
+│   │   │   └── README.md
 │   │   ├── projects
+│   │   │   ├── actions
+│   │   │   │   ├── deleteProject.ts
+│   │   │   │   └── saveProjectState.ts
+│   │   │   ├── components
+│   │   │   │   ├── CreateProjectModal.tsx
+│   │   │   │   ├── ProjectCard.tsx
+│   │   │   │   ├── ProjectGrid.tsx
+│   │   │   │   └── VersionHistory.tsx
+│   │   │   ├── hooks
+│   │   │   │   └── useAutosave.ts
+│   │   │   ├── actions.ts
+│   │   │   ├── DEBUGGING.md
+│   │   │   ├── README.md
+│   │   │   └── UPLOAD_WORKFLOW.md
 │   │   └── viewer
+│   │       ├── actions
+│   │       │   └── submitRenderJob.ts
+│   │       ├── components
+│   │       │   ├── Annotations.tsx
+│   │       │   ├── AssetLibrary.tsx
+│   │       │   ├── CarbonFootprintDemo.tsx
+│   │       │   ├── CarbonFootprintReport.tsx
+│   │       │   ├── CollaborationPanel.tsx
+│   │       │   ├── DiffViewer.tsx
+│   │       │   ├── Effects.tsx
+│   │       │   ├── ExitPresentationButton.tsx
+│   │       │   ├── ExportMenu.tsx
+│   │       │   ├── KeyboardShortcuts.tsx
+│   │       │   ├── LiveCursors.tsx
+│   │       │   ├── Loader.tsx
+│   │       │   ├── LoadingState.tsx
+│   │       │   ├── Measurements.tsx
+│   │       │   ├── ModelErrorFallback.tsx
+│   │       │   ├── ModelRenderer.tsx
+│   │       │   ├── PerformanceReport.tsx
+│   │       │   ├── PerformanceReportDemo.tsx
+│   │       │   ├── QRCodeShare.tsx
+│   │       │   ├── RealPerformanceReport.tsx
+│   │       │   ├── RenderButton.tsx
+│   │       │   ├── RenderDialog.tsx
+│   │       │   ├── RenderModal.tsx
+│   │       │   ├── RenderModalWrapper.tsx
+│   │       │   ├── RenderProgress.tsx
+│   │       │   ├── SCENE_COMPONENT.md
+│   │       │   ├── Scene.tsx
+│   │       │   ├── SceneGraph.tsx
+│   │       │   ├── ScreenshotHandler.tsx
+│   │       │   ├── ScreenshotManager.tsx
+│   │       │   ├── SectionPlane.tsx
+│   │       │   ├── ShareQR.tsx
+│   │       │   ├── StateLoader.tsx
+│   │       │   ├── UnsupportedFormat.tsx
+│   │       │   ├── UploadOverlay.tsx
+│   │       │   ├── VersionControl.tsx
+│   │       │   ├── ViewerCanvas.tsx
+│   │       │   ├── ViewerContent.tsx
+│   │       │   ├── ViewerHeader.tsx
+│   │       │   ├── ViewerInspector.tsx
+│   │       │   ├── ViewerToolbar.tsx
+│   │       │   └── ViewerWrapper.tsx
+│   │       ├── hooks
+│   │       │   ├── useCollaboration.ts
+│   │       │   ├── useModelStats.ts
+│   │       │   └── useScreenshot.ts
+│   │       ├── store
+│   │       │   ├── useRenderStore.ts
+│   │       │   └── useViewerStore.ts
+│   │       ├── utils
+│   │       │   └── formatStats.ts
+│   │       ├── CLOUD_RENDERING.md
+│   │       ├── D5_QUALITY_UPGRADE.md
+│   │       ├── IMPLEMENTATION_STATUS.md
+│   │       ├── INSPECTOR_PANEL.md
+│   │       ├── INTERACTIVITY.md
+│   │       ├── LIGHTING_STUDIO.md
+│   │       ├── MATERIAL_EDITING.md
+│   │       ├── PRESENTATION_MODE.md
+│   │       ├── PRO_MODE.md
+│   │       ├── PRO_STUDIO_UPGRADE.md
+│   │       ├── README_INTERACTIVE.md
+│   │       ├── README_UPLOAD.md
+│   │       ├── README.md
+│   │       ├── RENDER_COCKPIT.md
+│   │       ├── SCREENSHOT_FEATURE.md
+│   │       ├── SMART_ANALYSIS_ENGINE.md
+│   │       └── VIEWER_DATA_FLOW.md
 │   ├── lib
+│   │   ├── analytics
+│   │   │   └── useAnalytics.ts
+│   │   ├── assets
+│   │   │   └── assetManager.ts
+│   │   ├── carbon
+│   │   │   └── carbonCalculator.ts
 │   │   ├── db
+│   │   ├── queue
+│   │   │   ├── mockQueue.ts
+│   │   │   └── redis.ts
+│   │   ├── rendering
+│   │   ├── supabase
+│   │   │   ├── client.ts
+│   │   │   ├── README.md
+│   │   │   ├── schema.sql
+│   │   │   └── server.ts
+│   │   ├── version-control
+│   │   │   └── versionEngine.ts
+│   │   ├── uploadThumbnail.ts
 │   │   └── utils.ts
-│   └── types
+│   ├── types
+│   │   ├── database.ts
+│   │   └── render.ts
+│   └── middleware.ts
+├── supabase
+│   └── migrations
+│       ├── 001_render_jobs.sql
+│       ├── 002_project_versions.sql
+│       ├── 003_analytics.sql
+│       └── 004_version_control.sql
+├── 1763813243260.zip
+├── amplify.yml
+├── CINEMATIC_REALISM_PHASE1.md
+├── CINEMATIC_UPGRADE.md
 ├── components.json
 ├── eslint.config.mjs
+├── FEATURE_STATUS.md
+├── gg.txt
+├── HIGH_FIDELITY_UPGRADE.md
+├── HIGH_PRIORITY_FIXES_COMPLETE.md
+├── IMPLEMENTATION_SUMMARY.md
 ├── next.config.ts
 ├── package.json
 ├── pnpm-lock.yaml
 ├── postcss.config.mjs
+├── QUICK_START.md
 ├── README.md
+├── SUPABASE_SETUP.md
 └── tsconfig.json
 ```
