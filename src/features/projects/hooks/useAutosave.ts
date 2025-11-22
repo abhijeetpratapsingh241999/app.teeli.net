@@ -29,7 +29,12 @@ export function useAutosave(projectId: string, enabled = true) {
         autoRotate: viewerState.autoRotate,
         enableEffects: viewerState.enableEffects
       },
-      annotations: viewerState.annotations,
+      annotations: viewerState.annotations.map(annotation => ({
+        id: annotation.id,
+        position: annotation.position,
+        text: annotation.content,
+        author: annotation.author
+      })),
       measurements: viewerState.measurements,
       timestamp: new Date().toISOString()
     }
