@@ -55,10 +55,6 @@ export async function signInWithGoogle() {
     },
   });
 
-  if (error) {
-    return { error: error.message };
-  }
-
   if (data.url) {
     redirect(data.url);
   }
@@ -74,10 +70,6 @@ export async function signInWithMicrosoft() {
     },
   });
 
-  if (error) {
-    return { error: error.message };
-  }
-
   if (data.url) {
     redirect(data.url);
   }
@@ -92,10 +84,6 @@ export async function signInWithApple() {
       redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
     },
   });
-
-  if (error) {
-    return { error: error.message };
-  }
 
   if (data.url) {
     redirect(data.url);
