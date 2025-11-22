@@ -269,7 +269,7 @@ export default function PricingPage() {
                         <>
                           <span className="text-4xl font-bold text-white">${price}</span>
                           <span className="text-zinc-400">/{isAnnual ? 'year' : 'month'}</span>
-                          {isAnnual && plan.price.monthly !== 0 && (
+                          {isAnnual && typeof plan.price.monthly === 'number' && typeof plan.price.annual === 'number' && plan.price.monthly !== 0 && (
                             <div className="text-sm text-green-400 mt-1">
                               Save ${(plan.price.monthly * 12) - (plan.price.annual * 12)}/year
                             </div>
