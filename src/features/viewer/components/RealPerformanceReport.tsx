@@ -19,7 +19,7 @@ import {
 import * as THREE from 'three'
 
 interface RealPerformanceReportProps {
-  scene: THREE.Group | null
+  scene?: THREE.Group | null
   fileUrl?: string
 }
 

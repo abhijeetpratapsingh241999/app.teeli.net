@@ -20,7 +20,7 @@ import { CarbonCalculator, type CarbonMetrics, type ModelData } from '@/lib/carb
 import * as THREE from 'three'
 
 interface CarbonFootprintReportProps {
-  scene: THREE.Group | null
+  scene?: THREE.Group | null
   fileUrl?: string
 }
 
