@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import PerformanceReportDemo from "@/features/viewer/components/PerformanceReportDemo";
 import CarbonFootprintDemo from "@/features/viewer/components/CarbonFootprintDemo";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const projects = await getUserProjects();
 

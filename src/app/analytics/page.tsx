@@ -1,5 +1,7 @@
 import AnalyticsDashboard from '@/features/analytics/components/AnalyticsDashboard'
 
+export const dynamic = 'force-dynamic';
+
 export default function AnalyticsPage() {
   return (
     <div className="min-h-screen bg-zinc-950">
