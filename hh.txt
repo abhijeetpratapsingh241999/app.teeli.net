@@ -1,0 +1,12 @@
+# Project Structure
+
+```
+.cursor/
+├── prompts
+│   └── READ_ME_FIRST.mdc
+└── rules
+    ├── 000-project-context.mdc
+    ├── 100-ui-style.mdc
+    ├── 200-tech-stack.mdc
+    └── 900-ignore.mdc
+```

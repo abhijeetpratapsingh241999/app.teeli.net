@@ -1,0 +1,95 @@
+# 📋 Project Context - Teeli Platform
+
+## 🎯 Mission Statement
+Empower professionals to work with 3D content as easily as editing documents.
+
+## 🏢 Product Overview
+**Teeli** is a cloud-based 3D rendering and processing SaaS platform that combines:
+- **Enterprise-grade 3D processing** (geometry repair, conversion, optimization)
+- **Photorealistic rendering** (cloud GPU rendering at scale)
+- **Collaborative workflows** (real-time 3D collaboration)
+- **AI-powered automation** (automatic mesh repair, texture generation)
+
+## 🏗️ Architecture
+
+### Monorepo Structure
+```
+teeli-platform/
+├── apps/
+│   └── web/              # Next.js 15 frontend application
+│       ├── src/app/      # App Router pages
+│       ├── src/components/ # React components
+│       └── public/       # Static assets
+│
+├── services/
+│   ├── geometry-engine/  # Python: 3D geometry processing
+│   ├── _orchestrator/    # Future: Service orchestration
+│   └── _blockchain/      # Future: NFT & ownership tracking
+│
+├── packages/
+│   ├── ui/              # Shared UI components
+│   ├── hooks/           # Shared React hooks
+│   ├── three-utils/     # 3D utilities (Babylon.js helpers)
+│   └── feature-flags/   # Feature flag management
+│
+└── .cursor/             # AI assistant rules & context
+```
+
+## 👥 Target Users
+1. **3D Artists** - Clean and render models
+2. **Product Designers** - Visualize prototypes
+3. **Architects** - Generate building renders
+4. **Game Developers** - Optimize game assets
+5. **E-commerce** - Product visualization
+
+## 🎨 User Journey
+1. Upload 3D model (drag & drop)
+2. Auto-diagnose issues (AI scanning)
+3. One-click repair (automated fixing)
+4. Customize render settings (materials, lighting)
+5. Generate high-res renders (cloud GPU)
+6. Download or share (collaboration)
+
+## 💰 Business Model
+- **Free Tier**: 10 renders/month, 1GB storage
+- **Pro Tier**: $29/month - Unlimited renders, 100GB storage
+- **Enterprise**: Custom pricing - Priority rendering, API access
+
+## 🚀 Roadmap Phases
+
+### Phase 1 (MVP) - Current
+- ✅ Next.js frontend setup
+- ✅ Babylon.js 3D viewer
+- 🔄 File upload system
+- 🔄 Basic geometry diagnosis
+
+### Phase 2 (Q1 2026)
+- Geometry repair engine
+- Cloud rendering pipeline
+- User authentication
+- Payment integration
+
+### Phase 3 (Q2 2026)
+- Real-time collaboration
+- AI texture generation
+- Advanced material editor
+- Mobile app (React Native)
+
+### Phase 4 (Q3 2026)
+- Blockchain integration
+- NFT minting
+- Marketplace
+- API for developers
+
+## 🔧 Technical Philosophy
+- **Frontend-first**: Beautiful UI drives adoption
+- **Microservices**: Independent, scalable services
+- **Type-safe**: TypeScript everywhere possible
+- **Cloud-native**: Built for serverless deployment
+- **AI-augmented**: Automation over manual work
+
+## 📊 Success Metrics
+- **Performance**: <2s 3D model load time
+- **Quality**: 99.9% uptime SLA
+- **Adoption**: 10K users in first year
+- **Revenue**: $1M ARR by end of 2026

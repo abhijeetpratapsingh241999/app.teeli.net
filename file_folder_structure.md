@@ -1,0 +1,97 @@
+# File and Folder Structure
+
+## Root Directory
+- **hh.txt**
+- **README.md**
+- **.cursor/**
+
+## apps/
+### web/
+- **.gitignore**
+- **components.json**
+- **eslint.config.mjs**
+- **next.config.ts**
+- **package-lock.json**
+- **package.json**
+- **pnpm-lock.yaml**
+- **postcss.config.mjs**
+- **tsconfig.json**
+- **public/**:
+  - `file.svg`
+  - `globe.svg`
+  - `next.svg`
+  - `vercel.svg`
+  - `window.svg`
+- **src/**:
+  - **app/**:
+    - `favicon.ico`
+    - `globals.css`
+    - `layout.tsx`
+    - `page.tsx`
+    - `(dashboard)/home/`
+    - `viewer/`
+  - **components/**:
+    - `theme-provider.tsx`
+    - **layout/**:
+      - `Header.tsx`
+      - `MobileNav.tsx`
+      - `Sidebar.tsx`
+    - **shared/**:
+      - `GlassCard.tsx`
+    - **ui/**:
+      - `badge.tsx`
+      - `button.tsx`
+      - `card.tsx`
+      - `dialog.tsx`
+      - `dropdown-menu.tsx`
+      - `input.tsx`
+      - `LoginButton.tsx`
+      - `progress.tsx`
+      - `README.md`
+      - `select.tsx`
+      - `sheet.tsx`
+      - `slider.tsx`
+      - `switch.tsx`
+      - `tabs.tsx`
+  - **features/**:
+    - **p1-dashboard/components/**:
+      - `ControlPanel.tsx`
+      - `DashboardHome.tsx`
+      - `GreetingHero.tsx`
+      - `Viewer3D.tsx`
+  - **lib/**:
+    - `utils.ts`
+
+## packages/
+- **feature-flags/**:
+  - `index.ts`
+- **hooks/**:
+  - `use-theme.ts`
+  - `use-upload.ts`
+- **three-utils/**:
+  - `camera-utils.ts`
+  - `lighting.ts`
+  - `load-model.ts`
+- **ui/**:
+  - `button.tsx`
+  - `card.tsx`
+  - `glass.tsx`
+  - `index.ts`
+  - `utils.ts`
+
+## services/
+- **_blockchain/**:
+  - `README.md`
+- **_orchestrator/**:
+  - `README.md`
+- **geometry-engine/**:
+  - `main.py`
+  - **src/**:
+    - **convert/**:
+      - `blender_convert.py`
+    - **diagnose/**:
+      - `index.py`
+    - **repair/**:
+      - `index.py`
+    - **utils/**:
+      - `helper.py`

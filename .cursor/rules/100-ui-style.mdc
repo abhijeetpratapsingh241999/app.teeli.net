@@ -1,0 +1,667 @@
+# 🎨 UI Style Guide - Teeli Design System
+
+## 🌟 Design Philosophy
+**"Apple-level polish meets Canva simplicity with Midjourney magic"**
+
+### Three-Layer Design System
+
+#### 🍎 **Apple Layer** (Polish & Refinement)
+- **Purpose**: Premium feel, smooth interactions, accessibility
+- **Apply To**: All base components, animations, typography
+- **Key Traits**: 60fps performance, natural motion, refined details
+
+#### 🎨 **Canva Layer** (Simplicity & Clarity)  
+- **Purpose**: Easy-to-use interface, glassmorphism, clean patterns
+- **Apply To**: Cards, buttons, layouts, general UI components
+- **Key Traits**: Light/airy design, predictable behavior, friendly
+
+#### 🪄 **Midjourney Layer** (AI Magic & Drama)
+- **Purpose**: Futuristic AI features, immersive 3D experience
+- **Apply To**: ONLY AI-powered features (Auto-Heal, Generate, 3D viewport)
+- **Key Traits**: Neon glows, void black, holographic effects
+
+#### 🎨 **Figma Integration** (Design-to-Code Workflow)
+- **Purpose**: Single source of truth for design system
+- **Apply To**: All components, spacing, colors, typography
+- **Key Traits**: Design tokens, component library, auto-sync with code
+
+---
+
+### Core Principles
+1. **Clarity** - Every element has a clear purpose
+2. **Consistency** - Predictable patterns throughout
+3. **Beauty** - Delightful micro-interactions
+4. **Performance** - 60fps animations minimum
+5. **Accessibility** - WCAG 2.1 AA compliant
+
+## 🎭 Visual Identity
+
+---
+## 🍎 APPLE LAYER (Polish & Refinement)
+
+### Typography - Apple Inspired
+**Philosophy**: Clean, readable, hierarchical
+
+```css
+--font-sans: 'Geist Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+--font-mono: 'Geist Mono', 'SF Mono', 'Fira Code', monospace;
+```
+
+#### Scale
+```css
+--text-xs: 0.75rem;    /* 12px - Captions */
+--text-sm: 0.875rem;   /* 14px - Body small */
+--text-base: 1rem;     /* 16px - Body */
+--text-lg: 1.125rem;   /* 18px - Large body */
+--text-xl: 1.25rem;    /* 20px - H4 */
+--text-2xl: 1.5rem;    /* 24px - H3 */
+--text-3xl: 1.875rem;  /* 30px - H2 */
+--text-4xl: 2.25rem;   /* 36px - H1 */
+--text-5xl: 3rem;      /* 48px - Hero */
+```
+
+### Animations - Apple Motion
+**Philosophy**: Natural, responsive, respects user preferences
+
+#### Principles
+- **Duration**: 200-300ms for UI, 400-600ms for page transitions
+- **Easing**: `cubic-bezier(0.4, 0, 0.2, 1)` - Natural motion
+- **Reduce motion**: Respect `prefers-reduced-motion`
+
+#### Framer Motion Presets
+```tsx
+const fadeIn = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.3 }
+};
+
+const scaleIn = {
+  initial: { scale: 0.95, opacity: 0 },
+  animate: { scale: 1, opacity: 1 },
+  transition: { duration: 0.2 }
+};
+```
+
+### Accessibility - Apple Standards
+**Philosophy**: Everyone can use our platform
+
+#### Focus States
+```css
+.focus-visible:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+```
+
+#### Keyboard Navigation
+- All interactive elements must be keyboard accessible
+- Tab order follows visual hierarchy
+- Escape key closes modals/sheets
+- Arrow keys navigate lists/grids
+
+---
+## 🎨 CANVA LAYER (Simplicity & Clarity)
+
+### Color Palette - Professional & Friendly
+**Philosophy**: Sophisticated yet approachable
+### Color Palette - Professional & Friendly
+**Philosophy**: Sophisticated yet approachable
+
+```css
+/* Primary - Professional Blue */
+--primary: oklch(0.554 0.046 257.417);      /* #3B82F6 */
+--primary-hover: oklch(0.504 0.056 257.417); /* Darker */
+
+/* Secondary - Creative Purple */
+--secondary: oklch(0.654 0.156 293.000);    /* #A855F7 */
+
+/* Neutrals - Zinc (Sophisticated) */
+--background: oklch(1 0 0);                 /* White */
+--foreground: oklch(0.129 0.042 264.695);   /* Almost Black */
+--muted: oklch(0.968 0.007 247.896);        /* Light Gray */
+--border: oklch(0.929 0.013 255.508);       /* Border Gray */
+
+/* Status Colors */
+--success: oklch(0.646 0.222 41.116);       /* Green */
+--warning: oklch(0.828 0.189 84.429);       /* Yellow */
+--error: oklch(0.577 0.245 27.325);         /* Red */
+--info: oklch(0.6 0.118 184.704);           /* Blue */
+```
+
+#### Standard Dark Mode
+```css
+--background-dark: oklch(0.129 0.042 264.695); /* Dark Zinc */
+--foreground-dark: oklch(0.984 0.003 247.858); /* Off-white */
+--glass-dark: rgba(255, 255, 255, 0.05);       /* Glass effect */
+```
+
+### Glass Morphism - Canva Style
+**Philosophy**: Light, airy, modern
+
+#### Primary Glass Card
+```css
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+```
+
+#### Elevated Glass (Modals, Popovers)
+```css
+.glass-elevated {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(40px) saturate(200%);
+  box-shadow: 
+    0 24px 64px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+```
+
+### Component Patterns - Simple & Reusable
+**Philosophy**: Predictable, easy to use
+
+#### Buttons
+```tsx
+// Primary - Main actions
+<Button variant="default">Upload Model</Button>
+
+// Secondary - Alternative actions
+<Button variant="secondary">Cancel</Button>
+
+// Ghost - Tertiary actions
+<Button variant="ghost">Learn More</Button>
+
+// Destructive - Delete actions
+<Button variant="destructive">Delete</Button>
+```
+
+#### Cards
+```tsx
+// Standard card with glass effect
+<Card className="glass-card">
+  <CardHeader>
+    <CardTitle>3D Model Analysis</CardTitle>
+  </CardHeader>
+  <CardContent>
+    {/* Content */}
+  </CardContent>
+</Card>
+```
+
+### Icon System - Lucide React
+**Philosophy**: Consistent, scalable, semantic
+
+#### Sizing
+```tsx
+<Icon size={16} /> {/* Small - Inline */}
+<Icon size={20} /> {/* Medium - Buttons */}
+<Icon size={24} /> {/* Large - Headers */}
+<Icon size={32} /> {/* XL - Feature cards */}
+```
+
+### Responsive Design - Mobile First
+**Philosophy**: Works everywhere
+
+#### Breakpoints
+```css
+--screen-sm: 640px;   /* Mobile landscape */
+--screen-md: 768px;   /* Tablet */
+--screen-lg: 1024px;  /* Desktop */
+--screen-xl: 1280px;  /* Large desktop */
+--screen-2xl: 1536px; /* Ultra-wide */
+```
+
+---
+
+---
+## 🪄 MIDJOURNEY LAYER (AI Magic & Drama)
+**⚠️ USE ONLY FOR AI-POWERED FEATURES**
+
+### Magic Gradient - Signature AI Look
+**Philosophy**: Futuristic, premium, instantly recognizable
+
+```css
+/* Neon Purple-to-Blue gradient - Used for Auto-Heal & Generate buttons */
+--magic-gradient: linear-gradient(
+  135deg, 
+  #8B5CF6 0%,     /* Vivid Purple */
+  #6366F1 50%,    /* Electric Indigo */
+  #3B82F6 100%    /* Bright Blue */
+);
+
+/* Animated variant for hover states */
+--magic-gradient-animated: linear-gradient(
+  135deg,
+  #A78BFA 0%,     /* Lighter Purple */
+  #818CF8 50%,    /* Lighter Indigo */
+  #60A5FA 100%    /* Lighter Blue */
+);
+```
+
+### Deep Immersion Mode - 3D Viewport
+**Philosophy**: Maximum contrast for 3D models to pop
+
+```css
+/* Void Black - Ultra-deep background for 3D viewport */
+--void-black: #050505;           /* Near-absolute black */
+--void-gray: oklch(0.08 0 0);    /* Subtle gray for contrast */
+
+/* Apply to 3D viewer container */
+.immersive-viewport {
+  background: var(--void-black);
+  background-image: 
+    radial-gradient(
+      ellipse at top,
+      rgba(139, 92, 246, 0.03) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at bottom,
+      rgba(59, 130, 246, 0.03) 0%,
+      transparent 50%
+    );
+}
+```
+
+### Neon Glow Effects - Interactive Magic
+**Philosophy**: Tangible feedback for AI interactions
+
+```css
+/* Primary Glow - Purple (for AI buttons) */
+--glow-purple: 0 0 20px rgba(139, 92, 246, 0.5),
+               0 0 40px rgba(139, 92, 246, 0.3),
+               0 0 60px rgba(139, 92, 246, 0.1);
+
+/* Secondary Glow - Blue (for active states) */
+--glow-blue: 0 0 20px rgba(59, 130, 246, 0.5),
+             0 0 40px rgba(59, 130, 246, 0.3),
+             0 0 60px rgba(59, 130, 246, 0.1);
+
+/* Apply on hover/active states */
+.ai-button:hover {
+  box-shadow: var(--glow-purple);
+  transform: translateY(-1px);
+}
+
+.ai-button:active {
+  box-shadow: var(--glow-blue);
+  transform: translateY(0);
+}
+```
+
+### AI-Powered Button Style - The Signature Look
+**Philosophy**: Unmistakable AI feature indicator
+
+```tsx
+// Auto-Heal & Generate buttons with magic gradient
+<Button 
+  className="
+    bg-gradient-to-br from-purple-500 via-indigo-500 to-blue-500
+    hover:from-purple-400 hover:via-indigo-400 hover:to-blue-400
+    shadow-[0_0_20px_rgba(139,92,246,0.5)]
+    hover:shadow-[0_0_40px_rgba(139,92,246,0.6)]
+    transition-all duration-300
+    border-0
+  "
+>
+  <Wand2Icon className="mr-2" />
+  Auto-Heal
+</Button>
+```
+
+### Holographic Glass - AI Feature Cards
+**Philosophy**: Futuristic, living interface elements
+
+```css
+.holographic-glass {
+  background: rgba(139, 92, 246, 0.05);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 16px;
+  box-shadow: 
+    0 8px 32px rgba(139, 92, 246, 0.15),
+    inset 0 1px 0 rgba(139, 92, 246, 0.3);
+  
+  /* Animated shimmer effect */
+  position: relative;
+  overflow: hidden;
+}
+
+.holographic-glass::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(139, 92, 246, 0.1) 50%,
+    transparent 70%
+  );
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { transform: translateX(-100%) translateY(-100%); }
+  50% { transform: translateX(100%) translateY(100%); }
+}
+```
+
+### Usage Guidelines - When to Use Midjourney Layer
+**Philosophy**: Reserve magic for truly magical features
+
+- ✅ **Magic Gradient**: Apply ONLY to AI-powered features (Auto-Heal, Generate, AI Suggestions)
+- ✅ **Void Black**: Use for 3D viewport background to maximize model contrast
+- ✅ **Neon Glow**: Reserve for hover/active states on AI buttons and interactive 3D elements
+- ✅ **Holographic Glass**: Use for AI feature cards, AI status indicators, and loading states
+- ❌ **Don't Overuse**: Regular buttons, forms, and navigation should use Canva Layer
+
+### Dark Mode Override - Full Immersion
+**Philosophy**: When editing 3D, go full cinematic
+
+```css
+/* When user is in 3D editing mode */
+.dark-immersive {
+  --background-dark: var(--void-black);
+  --card-dark: rgba(139, 92, 246, 0.05);
+  --border-dark: rgba(139, 92, 246, 0.2);
+}
+```
+
+---
+## 📐 Layer Application Guide
+
+### Where Each Layer Applies
+
+| Component | Apple | Canva | Midjourney |
+|-----------|-------|-------|------------|
+| Typography | ✅ | ✅ | - |
+| Animations | ✅ | ✅ | ✅ (enhanced) |
+| Buttons (Regular) | ✅ | ✅ | - |
+| Buttons (AI) | ✅ | ✅ | ✅ |
+| Cards (Regular) | ✅ | ✅ | - |
+| Cards (AI Features) | ✅ | ✅ | ✅ |
+| 3D Viewport | ✅ | - | ✅ |
+| Navigation | ✅ | ✅ | - |
+| Forms | ✅ | ✅ | - |
+| Icons | ✅ | ✅ | ✅ (glows) |
+
+---
+
+## 🖼️ Glass Morphism
+
+### Primary Glass Card
+```css
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+```
+
+### Elevated Glass (Modals, Popovers)
+```css
+.glass-elevated {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(40px) saturate(200%);
+  box-shadow: 
+    0 24px 64px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+```
+
+---
+## 📋 Quick Reference
+
+### 🍎 Apple = Foundation
+- Typography, animations, accessibility
+- Natural motion, 60fps performance
+- Focus states, keyboard navigation
+
+### 🎨 Canva = Everyday UI
+- Glass cards, buttons, forms
+- Color palette, icons, layouts
+- Light/friendly aesthetic
+
+### 🪄 Midjourney = AI Magic ONLY
+- Auto-Heal, Generate buttons
+- 3D viewport (void black background)
+- Neon glows, holographic effects
+
+---
+
+## 📐 Typography
+
+## 📱 Responsive Breakpoints
+
+## 🌐 3D Viewer UI
+
+### Toolbar (Floating, Glass)
+```tsx
+<div className="absolute top-4 right-4 glass-card p-2 flex gap-2">
+  <IconButton icon={RotateIcon} />
+  <IconButton icon={ZoomIcon} />
+  <IconButton icon={FullscreenIcon} />
+</div>
+```
+
+### Info Panel (Side, Glass)
+```tsx
+<Sheet side="right" className="glass-elevated">
+  <SheetHeader>Model Information</SheetHeader>
+  <SheetContent>
+    <Tabs>
+      <TabsList>
+        <TabsTrigger>Details</TabsTrigger>
+        <TabsTrigger>Issues</TabsTrigger>
+      </TabsList>
+    </Tabs>
+  </SheetContent>
+</Sheet>
+```
+
+---
+
+## 🎨 Figma Design System Integration
+
+### Design Workflow
+**Philosophy**: Design once, code consistently
+
+#### Figma File Structure
+```
+📁 Teeli Design System (Main File)
+├── 🎨 Design Tokens
+│   ├── Colors (Light/Dark modes)
+│   ├── Typography (Scales, weights)
+│   ├── Spacing (4px grid system)
+│   ├── Shadows (Glass effects)
+│   └── Radius (Border radius scale)
+│
+├── 🧩 Component Library
+│   ├── Buttons (All variants)
+│   ├── Cards (Glass, elevated, holographic)
+│   ├── Forms (Inputs, selects, checkboxes)
+│   ├── Navigation (Navbar, sidebar, tabs)
+│   ├── 3D Viewer UI (Toolbar, info panel)
+│   └── AI Components (Magic buttons, status cards)
+│
+├── 📱 Responsive Layouts
+│   ├── Mobile (320-640px)
+│   ├── Tablet (641-1024px)
+│   └── Desktop (1025px+)
+│
+└── 🌈 Brand Assets
+    ├── Logo variations
+    ├── Illustrations
+    └── 3D mockups
+```
+
+### Design Tokens (Variables)
+Export these as CSS variables for consistency:
+
+```css
+/* Figma Variables → CSS Variables */
+--spacing-xs: 4px;    /* Figma: spacing/xs */
+--spacing-sm: 8px;    /* Figma: spacing/sm */
+--spacing-md: 16px;   /* Figma: spacing/md */
+--spacing-lg: 24px;   /* Figma: spacing/lg */
+--spacing-xl: 32px;   /* Figma: spacing/xl */
+
+--radius-sm: 8px;     /* Figma: radius/sm */
+--radius-md: 12px;    /* Figma: radius/md */
+--radius-lg: 16px;    /* Figma: radius/lg */
+```
+
+### Component Library Guidelines
+
+#### Button Component (Figma)
+- **Base Component**: `Button/Default`
+- **Variants**: Default, Secondary, Ghost, Destructive, AI-Magic
+- **States**: Default, Hover, Active, Disabled, Focus
+- **Sizes**: Small (32px), Medium (40px), Large (48px)
+- **Auto Layout**: 12px padding horizontal, 8px vertical
+- **Icons**: Optional left/right icons (20px size)
+
+#### Card Component (Figma)
+- **Base Component**: `Card/Glass`
+- **Variants**: Default, Elevated, Holographic
+- **Padding**: 24px (all sides)
+- **Border**: 1px stroke with 50% opacity
+- **Backdrop Blur**: 20px (simulated with effect)
+- **Shadow**: Multi-layer for depth
+
+### Design-to-Code Workflow
+
+#### Step 1: Design in Figma
+1. Use component library for consistency
+2. Apply design tokens (variables) instead of hard-coded values
+3. Name layers semantically (`header`, `content`, `footer`)
+4. Use Auto Layout for responsive behavior
+
+#### Step 2: Export Assets
+```bash
+# Export icons as SVG
+# Export images as WebP (2x resolution)
+# Export design tokens as JSON
+```
+
+#### Step 3: Sync with Code
+- **Manual Method**: Copy Figma CSS → Tailwind classes
+- **Automated Method**: Use Figma-to-Code plugins (Anima, Builder.io)
+- **Token Sync**: Use Style Dictionary or Figma Tokens plugin
+
+### Figma Plugins for Workflow
+
+#### Essential Plugins
+1. **Figma Tokens** - Export design tokens as JSON
+2. **Anima** - Convert designs to React/Next.js code
+3. **Stark** - Accessibility checker (contrast, focus states)
+4. **Content Reel** - Populate with realistic 3D model data
+5. **Unsplash** - High-quality placeholder images
+
+#### Development Handoff
+```typescript
+// Example: Button component in Figma → Code
+// Figma: Button/AI-Magic (Hover state)
+<Button 
+  variant="magic"
+  size="lg"
+  className="hover:shadow-[0_0_40px_rgba(139,92,246,0.6)]"
+>
+  <Wand2Icon className="mr-2" size={20} />
+  Auto-Heal
+</Button>
+```
+
+### Naming Conventions
+
+#### Figma Layers
+```
+✅ Good: header-navigation, card-feature, button-primary
+❌ Bad: Rectangle 123, Group 456, Frame 789
+```
+
+#### Components
+```
+✅ Good: Button/Primary/Hover, Card/Glass/Dark
+❌ Bad: Component 1, btn copy 3, card final v2
+```
+
+### Design QA Checklist
+
+Before handing off to development:
+- [ ] All components use design tokens (no hard-coded values)
+- [ ] Responsive breakpoints tested (mobile, tablet, desktop)
+- [ ] Dark mode variants created for all components
+- [ ] Focus states defined (keyboard accessibility)
+- [ ] Hover/active states for all interactive elements
+- [ ] Glass effects use proper opacity + blur values
+- [ ] AI magic components use correct gradient/glow
+- [ ] Typography scale follows defined system
+- [ ] Spacing uses 4px grid system
+- [ ] Color contrast meets WCAG AA (4.5:1 for text)
+
+### Figma File Organization
+
+#### Pages
+1. **🎨 Design System** - Tokens, components, patterns
+2. **📱 Screens** - Full page designs (Home, Upload, Viewer)
+3. **🔄 User Flows** - Interactive prototypes
+4. **📋 Documentation** - Usage guidelines, do's/don'ts
+5. **🧪 Experiments** - Work-in-progress ideas
+
+#### Version Control
+- Use Figma Branching for major redesigns
+- Tag releases: `v1.0-mvp`, `v1.1-ai-features`
+- Document changes in version description
+
+### Collaboration Rules
+
+#### For Designers
+- Always work from component library (don't detach)
+- Update design tokens when adding new colors/spacing
+- Document component usage in annotations
+- Create interactive prototypes for complex flows
+
+#### For Developers
+- Reference Figma file for spacing/colors (don't guess)
+- Use Inspect panel for exact CSS values
+- Feedback on impossible-to-code designs early
+- Update Figma when code implementation differs
+
+---
+
+## 🚫 Design Don'ts
+
+### ❌ Never Use
+- Comic sans or decorative fonts
+- Neon colors outside AI features
+- Animations longer than 600ms
+- Auto-playing videos with sound
+- Complex shadows (max 2 layers)
+- Midjourney effects on regular UI
+
+### ✅ Always Remember
+- Apple layer = Base for everything
+- Canva layer = 90% of UI components
+- Midjourney layer = 10% (AI features only)
+- Figma = Single source of truth for design
+
+---
+
+**Design Files**: [Teeli Design System - Figma](https://figma.com/placeholder)  
+**Inspiration**: Apple.com, Linear.app, Vercel.com, Spline.design, Midjourney.com  
+**Figma Community**: [shadcn/ui Components](https://figma.com/@shadcn)

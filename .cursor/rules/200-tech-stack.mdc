@@ -1,0 +1,297 @@
+# 🛠️ Tech Stack - Teeli Platform
+
+## 📊 Technology Decisions
+
+### Frontend Stack
+
+#### Core Framework
+- **Next.js 16** (React 19)
+  - App Router (Server Components)
+  - Turbopack (Fast bundling)
+  - Image optimization
+  - API routes for BFF pattern
+
+#### 3D Engine
+- **Babylon.js 8.39+**
+  - WebGL-based 3D rendering
+  - GLB/GLTF loader support
+  - PBR (Physically Based Rendering)
+  - Real-time shadows & reflections
+  - **Why not Three.js?** Better performance, built-in GUI, enterprise support
+
+#### UI Framework
+- **Tailwind CSS 4**
+  - Utility-first styling
+  - CSS variables for theming
+  - JIT compiler
+  - Custom glass morphism utilities
+
+- **Shadcn UI**
+  - Radix UI primitives (accessible)
+  - Customizable components
+  - No runtime overhead
+  - Components: Button, Card, Dialog, Sheet, Tabs, Slider, Progress, Switch
+
+#### Animations
+- **Framer Motion 12**
+  - Declarative animations
+  - Gesture support
+  - Layout animations
+  - Server-compatible
+
+#### State Management
+- **Zustand 5**
+  - Minimal boilerplate
+  - TypeScript-first
+  - No Provider hell
+  - ~1KB gzipped
+  - **Use cases**: Global UI state, user preferences, 3D viewer state
+
+#### File Uploads
+- **Uppy 5**
+  - Resumable uploads (TUS protocol)
+  - Drag & drop
+  - Progress tracking
+  - Multi-file support
+  - **Max file size**: 500MB per model
+
+#### Icons
+- **Lucide React**
+  - 1000+ icons
+  - Tree-shakeable
+  - Consistent design
+  - Actively maintained
+
+#### Theme Management
+- **next-themes 0.4**
+  - Dark/light mode
+  - System preference detection
+  - No flash on load
+
+#### Notifications
+- **Sonner 2**
+  - Beautiful toasts
+  - Promise-based API
+  - Customizable
+  - Accessible
+
+### Backend Stack
+
+#### Primary Language
+- **Python 3.11+**
+  - Type hints (mypy)
+  - Async/await support
+  - Rich 3D processing ecosystem
+
+#### 3D Processing Libraries
+- **Trimesh** - Mesh processing & analysis
+- **PyMeshLab** - Advanced mesh repair
+- **Open3D** - Point cloud & geometry
+- **Blender Python API** - Format conversion
+
+#### Future Services
+- **Orchestrator** (TBD)
+  - Service coordination
+  - Job queue management
+  - Tech: FastAPI or Temporal
+
+- **Blockchain** (TBD)
+  - NFT minting
+  - Ownership tracking
+  - Tech: Web3.py + Ethereum/Polygon
+
+### DevOps & Infrastructure
+
+#### Version Control
+- **Git** + **GitHub**
+  - Monorepo strategy
+  - Conventional commits
+  - Branch protection
+
+#### Package Management
+- **npm** (Frontend)
+  - Workspaces for monorepo
+  - Lock files committed
+
+- **pip + venv** (Backend)
+  - requirements.txt
+  - Virtual environments
+
+#### CI/CD
+- **GitHub Actions** (Planned)
+  - Automated testing
+  - Lint checks
+  - Preview deployments
+
+#### Hosting
+- **Vercel** (Frontend)
+  - Edge functions
+  - Automatic previews
+  - Analytics
+
+- **AWS/GCP** (Backend - Planned)
+  - Lambda/Cloud Functions
+  - S3/Cloud Storage
+  - GPU instances for rendering
+
+#### Monitoring
+- **Vercel Analytics** (Frontend)
+- **Sentry** (Error tracking - Planned)
+- **PostHog** (Product analytics - Planned)
+
+### Development Tools
+
+#### IDE
+- **VS Code** (Recommended)
+  - ESLint extension
+  - Prettier extension
+  - Tailwind IntelliSense
+  - Python extension
+
+#### Code Quality
+- **TypeScript 5**
+  - Strict mode enabled
+  - Path aliases (@/*)
+
+- **ESLint 9**
+  - Next.js config
+  - React hooks rules
+  - Import sorting
+
+- **Prettier** (Planned)
+  - Consistent formatting
+  - Auto-format on save
+
+#### Type Safety
+- **Zod** (Planned)
+  - Runtime validation
+  - Type inference
+  - Form validation
+
+### Database (Planned - Phase 2)
+- **PostgreSQL**
+  - User data
+  - Project metadata
+  - Hosted: Supabase or Neon
+
+- **Redis**
+  - Caching
+  - Session storage
+  - Job queues
+
+### Authentication (Planned - Phase 2)
+- **Clerk** or **Auth.js**
+  - Social login (Google, GitHub)
+  - Email/password
+  - Magic links
+  - JWT tokens
+
+### Payments (Planned - Phase 2)
+- **Stripe**
+  - Subscription management
+  - Usage-based billing
+  - Invoicing
+
+### Storage (Planned - Phase 2)
+- **AWS S3** or **Cloudflare R2**
+  - 3D model storage
+  - Render output storage
+  - CDN integration
+
+## 🏗️ Folder Structure
+
+```
+teeli-platform/
+├── apps/
+│   └── web/
+│       ├── src/
+│       │   ├── app/              # Next.js App Router
+│       │   ├── components/       # React components
+│       │   │   ├── ui/           # Shadcn components
+│       │   │   ├── 3d/           # Babylon.js components
+│       │   │   └── features/     # Feature components
+│       │   ├── lib/              # Utilities
+│       │   ├── hooks/            # Custom React hooks
+│       │   ├── stores/           # Zustand stores
+│       │   └── types/            # TypeScript types
+│       ├── public/               # Static assets
+│       └── package.json
+│
+├── services/
+│   └── geometry-engine/
+│       ├── src/
+│       │   ├── diagnose/         # Mesh analysis
+│       │   ├── repair/           # Mesh repair
+│       │   ├── convert/          # Format conversion
+│       │   └── utils/            # Helper functions
+│       ├── tests/                # Python tests
+│       ├── main.py               # Entry point
+│       └── requirements.txt      # Python deps
+│
+├── packages/
+│   ├── ui/                       # Shared UI components
+│   ├── hooks/                    # Shared React hooks
+│   ├── three-utils/              # 3D utilities
+│   └── feature-flags/            # Feature flags
+│
+└── .cursor/                      # AI coding rules
+```
+
+## 📦 Key Dependencies (apps/web)
+
+```json
+{
+  "dependencies": {
+    "next": "^16.0.5",
+    "react": "^19.2.0",
+    "@babylonjs/core": "^8.39.0",
+    "@babylonjs/loaders": "^8.39.0",
+    "@babylonjs/gui": "^8.39.0",
+    "zustand": "^5.0.8",
+    "@uppy/core": "^5.1.1",
+    "@uppy/dashboard": "^5.0.4",
+    "@uppy/tus": "^5.0.2",
+    "framer-motion": "^12.23.24",
+    "lucide-react": "^0.555.0",
+    "next-themes": "^0.4.6",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.4.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "eslint": "^9",
+    "tailwindcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19"
+  }
+}
+```
+
+## 🎯 Performance Targets
+
+- **First Contentful Paint**: <1.5s
+- **Time to Interactive**: <3s
+- **3D Model Load**: <2s (10MB model)
+- **Lighthouse Score**: 95+ (Performance)
+- **Bundle Size**: <300KB (initial JS)
+
+## 🔒 Security
+
+- **CSP Headers**: Configured in next.config.ts
+- **HTTPS Only**: Force HTTPS in production
+- **CORS**: Restrictive CORS policy
+- **Rate Limiting**: API route protection (Planned)
+- **Input Validation**: Zod schemas (Planned)
+
+## 🧪 Testing (Planned - Phase 2)
+
+- **Unit Tests**: Vitest
+- **E2E Tests**: Playwright
+- **Component Tests**: Testing Library
+- **Visual Tests**: Chromatic
+
+---
+**Tech Stack Review**: Every 6 months
+**Dependency Updates**: Weekly (Dependabot)

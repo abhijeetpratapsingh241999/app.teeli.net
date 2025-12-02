@@ -1,0 +1,61 @@
+# 🎯 Teeli Platform - Developer Onboarding
+
+## Welcome to the Team!
+
+You're now part of building the **most advanced 3D rendering SaaS platform**.
+
+## 🚀 Quick Start
+
+### 1. Understand the Vision
+Teeli transforms how professionals work with 3D models:
+- **Upload** any 3D file (GLB, GLTF, OBJ, FBX)
+- **Diagnose** geometry issues automatically
+- **Repair** mesh problems with AI
+- **Render** photorealistic outputs in cloud
+- **Collaborate** in real-time
+
+### 2. Architecture Overview
+```
+Monorepo Structure:
+├── apps/web          → Next.js 15 frontend (User Interface)
+├── services/         → Python microservices (3D Processing)
+├── packages/         → Shared utilities (Reusable code)
+└── .cursor/          → AI coding rules (This directory)
+```
+
+### 3. Read These Files First
+1. `.cursor/rules/000-project-context.mdc` - Project overview
+2. `.cursor/rules/100-ui-style.mdc` - Design system
+3. `.cursor/rules/200-tech-stack.mdc` - Technical decisions
+4. `.cursor/rules/900-ignore.mdc` - What NOT to modify
+
+### 4. Development Workflow
+```bash
+# Frontend (Next.js)
+cd apps/web
+npm run dev          # Start at localhost:3000
+
+# Backend (Python)
+cd services/geometry-engine
+python main.py       # Start geometry service
+```
+
+### 5. Key Principles
+- **Design**: Apple-level polish + Canva simplicity
+- **Performance**: Sub-second 3D operations
+- **Scalability**: Handle enterprise workloads
+- **Quality**: Production-ready code only
+
+## 📚 Next Steps
+1. Set up your local environment
+2. Review the tech stack documentation
+3. Check open tasks in project board
+4. Ask questions in team chat
+
+## 🆘 Need Help?
+- **Technical**: Check `/docs` folder
+- **Design**: Review Figma files
+- **Questions**: Ping the team lead
+
+---
+**Remember**: Every line of code impacts thousands of 3D professionals. Code with care! 💎

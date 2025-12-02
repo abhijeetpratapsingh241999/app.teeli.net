@@ -1,0 +1,223 @@
+# 🚫 Ignore Rules - Do NOT Modify
+
+## Critical Files/Folders
+
+### Never Touch
+```
+node_modules/          # NPM dependencies (auto-generated)
+.next/                 # Next.js build output
+dist/                  # Production build
+build/                 # Alternative build output
+.vercel/               # Vercel deployment cache
+.turbo/                # Turbopack cache
+__pycache__/           # Python bytecode
+*.pyc                  # Python compiled files
+.DS_Store              # macOS metadata
+Thumbs.db              # Windows metadata
+```
+
+### Auto-Generated Files
+```
+package-lock.json      # Don't edit manually (use npm install)
+pnpm-lock.yaml         # Don't edit manually
+yarn.lock              # Don't edit manually
+.env.local             # Contains secrets (git-ignored)
+.env.production        # Production secrets (git-ignored)
+.vscode/               # User-specific VS Code settings
+.idea/                 # User-specific IDE settings
+```
+
+### Build Artifacts
+```
+apps/web/.next/        # Next.js build cache
+apps/web/out/          # Static export output
+services/**/venv/      # Python virtual environments
+services/**/.pytest_cache/  # Test cache
+*.log                  # Log files
+*.tsbuildinfo          # TypeScript build info
+```
+
+## Modify With Extreme Caution
+
+### Core Configuration (Discuss First)
+```
+next.config.ts         # Next.js configuration
+tailwind.config.ts     # Tailwind CSS configuration
+tsconfig.json          # TypeScript configuration
+package.json           # Dependencies (coordinate changes)
+components.json        # Shadcn configuration
+.eslintrc.json         # Linting rules
+```
+
+### Shared Packages (Breaking Changes)
+```
+packages/ui/           # Used by multiple apps
+packages/hooks/        # Shared hooks
+packages/three-utils/  # 3D utilities
+```
+
+## Allowed Modifications
+
+### Safe to Edit
+```
+apps/web/src/          # Frontend application code
+services/              # Backend services
+README.md              # Documentation
+.cursor/               # AI assistant rules (this folder)
+```
+
+### Add New Files
+```
+apps/web/src/components/   # New components
+apps/web/src/app/          # New pages
+services/*/src/            # New service logic
+packages/*/                # New utilities (if needed)
+```
+
+## Git Ignore Strategy
+
+### Already in .gitignore
+```
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+
+# Build outputs
+.next/
+dist/
+build/
+
+# Environment
+.env*.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+```
+
+## Special Folders
+
+### Underscore Prefix (_)
+Folders starting with `_` are placeholders for future features:
+```
+services/_orchestrator/    # Future: Service orchestration
+services/_blockchain/      # Future: Blockchain integration
+```
+**Rule**: Don't implement until explicitly planned in roadmap.
+
+### Hidden Folders (.)
+Folders starting with `.` are configuration/tooling:
+```
+.cursor/               # AI assistant context
+.github/               # GitHub workflows (when added)
+.husky/                # Git hooks (when added)
+```
+**Rule**: Only modify if you understand the implications.
+
+## File Naming Conventions
+
+### DO Use
+```
+kebab-case.tsx         # Component files
+UseHook.ts             # Hooks (PascalCase)
+utils.ts               # Utilities (lowercase)
+index.ts               # Barrel exports
+```
+
+### DON'T Use
+```
+MyComponent.tsx        # Wrong: Use kebab-case
+helper_functions.py    # Python: Use snake_case
+TEMP_FILE.tsx          # No temporary files in git
+COPY_OF_something.tsx  # No backup files
+```
+
+## Dependency Management
+
+### Before Adding Dependencies
+1. **Check if already exists**: Search package.json
+2. **Evaluate size**: Use bundlephobia.com
+3. **Check maintenance**: Last updated < 6 months
+4. **Discuss with team**: For packages >100KB
+
+### Don't Install
+```bash
+❌ jQuery                # React handles DOM
+❌ Lodash (full)         # Use lodash-es or native
+❌ Moment.js             # Use date-fns or day.js
+❌ Bootstrap             # We use Tailwind + Shadcn
+❌ Three.js              # We use Babylon.js
+```
+
+## Code Formatting
+
+### Automated (Don't Manually Format)
+- Prettier will auto-format (when configured)
+- ESLint will auto-fix on save
+- Trust the tools!
+
+### Manual Formatting
+If you must format manually:
+```bash
+npm run lint:fix        # Auto-fix ESLint issues
+npm run format          # Run Prettier (when configured)
+```
+
+## Secrets Management
+
+### NEVER Commit
+```
+❌ API keys
+❌ Database passwords
+❌ Private keys
+❌ AWS credentials
+❌ Stripe secret keys
+❌ JWT secrets
+```
+
+### Use Environment Variables
+```bash
+# .env.local (git-ignored)
+NEXT_PUBLIC_API_URL=...
+DATABASE_URL=...
+STRIPE_SECRET_KEY=...
+```
+
+## Emergency Rollback
+
+If you accidentally modified critical files:
+```bash
+git checkout main -- next.config.ts  # Restore from main
+git status                           # Check changes
+git diff                             # Review differences
+```
+
+## Questions Before Modifying?
+
+Ask yourself:
+1. **Is this the right file to change?**
+2. **Will this break existing functionality?**
+3. **Should I discuss with the team first?**
+4. **Is there a better way to achieve this?**
+5. **Have I tested locally?**
+
+When in doubt, **ask the team lead!**
+
+---
+**Last Updated**: Setup Phase
+**Review Frequency**: When adding new tools/dependencies
