@@ -12,7 +12,7 @@ import {
   CaretRight,
   Moon,
   Sun,
-  Toggle,
+  ToggleRight,
 } from "@phosphor-icons/react";
 import { useTheme } from "next-themes";
 
