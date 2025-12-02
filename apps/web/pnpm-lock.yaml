@@ -17,6 +17,9 @@ importers:
       '@babylonjs/loaders':
         specifier: ^8.39.0
         version: 8.39.0(@babylonjs/core@8.39.0)(babylonjs-gltf2interface@8.39.0)
+      '@babylonjs/materials':
+        specifier: ^8.39.1
+        version: 8.39.2(@babylonjs/core@8.39.0)
       '@phosphor-icons/react':
         specifier: ^2.1.10
         version: 2.1.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -204,6 +207,11 @@ packages:
     peerDependencies:
       '@babylonjs/core': ^8.0.0
       babylonjs-gltf2interface: ^8.0.0
+
+  '@babylonjs/materials@8.39.2':
+    resolution: {integrity: sha512-66ji/ktUHjj2CcGn25Cm/v9zQpYFRZNLyUNBI3G6m5ocb2y4QVL2KmxXIbzTdAVbEUSIk67nfNXIQGOONraMRg==}
+    peerDependencies:
+      '@babylonjs/core': ^8.6.0
 
   '@emnapi/core@1.7.1':
     resolution: {integrity: sha512-o1uhUASyo921r2XtHYOHy7gdkGLge8ghBEQHMWmyJFoXlpU58kIrhhN3w26lpQb6dspetweapMn2CSNwQ8I4wg==}
@@ -2822,6 +2830,10 @@ snapshots:
     dependencies:
       '@babylonjs/core': 8.39.0
       babylonjs-gltf2interface: 8.39.0
+
+  '@babylonjs/materials@8.39.2(@babylonjs/core@8.39.0)':
+    dependencies:
+      '@babylonjs/core': 8.39.0
 
   '@emnapi/core@1.7.1':
     dependencies:
