@@ -177,37 +177,82 @@ export function Header() {
           <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/40 to-transparent" />
           
           <div className="px-4 py-3 flex items-center justify-between">
-            {/* Left: Logo */}
-            <div className="flex items-center gap-2">
-              <div className="relative w-8 h-8">
-                {/* Logo glow */}
-                <div className="absolute inset-0 bg-linear-to-br from-purple-600 to-blue-600 rounded-xl blur-md opacity-60" />
-                {/* Logo */}
-                <div className="relative bg-linear-to-br from-purple-600 via-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-white text-base font-bold">T</span>
+            {/* Left: Logo Only (No Text on Mobile) */}
+            <div className="flex items-center">
+              <div className="relative w-10 h-10">
+                {/* Outer glow ring */}
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-400 rounded-2xl blur-lg opacity-50 animate-pulse" />
+                
+                {/* Logo container with glass effect */}
+                <div className="relative w-full h-full bg-gradient-to-br from-purple-600 via-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-[0_4px_20px_rgba(99,102,241,0.4)] overflow-hidden">
+                  {/* Inner shine */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent" />
+                  
+                  {/* T Letter with glow */}
+                  <span 
+                    className="relative text-white text-xl font-black tracking-tight"
+                    style={{ 
+                      textShadow: '0 0 10px rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.3)',
+                      fontFamily: 'system-ui, -apple-system, sans-serif'
+                    }}
+                  >
+                    T
+                  </span>
+                  
+                  {/* Decorative dot */}
+                  <div className="absolute bottom-1.5 right-1.5 w-1.5 h-1.5 bg-cyan-300 rounded-full shadow-[0_0_6px_rgba(103,232,249,0.8)]" />
                 </div>
               </div>
-              <h1 className="text-base font-bold text-slate-800 dark:text-white">Teeli</h1>
             </div>
 
             {/* Right: Compact Actions */}
             <div className="flex items-center gap-2">
               {/* Credit Balance */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/50 dark:bg-white/10">
                 <Lightning 
-                  size={16}
+                  size={14}
                   weight="fill"
                   className="text-amber-500" 
                   style={{ filter: 'drop-shadow(0 0 6px rgba(251, 191, 36, 0.5))' }}
                 />
-                <span className="text-sm font-bold text-slate-700">{userCredits.toLocaleString()}</span>
-                <span className="text-[10px] font-medium text-slate-500">CR</span>
+                <span className="text-sm font-bold text-slate-700 dark:text-white">{userCredits.toLocaleString()}</span>
               </div>
+
+              {/* Theme Toggle */}
+              <motion.button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                whileTap={{ scale: 0.92 }}
+                className="relative w-9 h-9 rounded-xl bg-white/60 dark:bg-white/10 border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-none flex items-center justify-center overflow-hidden"
+              >
+                {mounted && (
+                  <motion.div
+                    initial={false}
+                    animate={{ rotate: isDark ? 180 : 0 }}
+                    transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  >
+                    {isDark ? (
+                      <Moon 
+                        size={16} 
+                        weight="fill" 
+                        className="text-blue-400"
+                        style={{ filter: 'drop-shadow(0 0 8px rgba(96, 165, 250, 0.6))' }}
+                      />
+                    ) : (
+                      <Sun 
+                        size={16} 
+                        weight="fill" 
+                        className="text-amber-500"
+                        style={{ filter: 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.6))' }}
+                      />
+                    )}
+                  </motion.div>
+                )}
+              </motion.button>
 
               {/* Notifications */}
               <motion.button
                 whileTap={{ scale: 0.92 }}
-                className="relative w-9 h-9 rounded-xl bg-white/60 dark:bg-white/10 flex items-center justify-center"
+                className="relative w-9 h-9 rounded-xl bg-white/60 dark:bg-white/10 border border-slate-200/60 dark:border-white/10 shadow-sm dark:shadow-none flex items-center justify-center"
               >
                 <Bell size={16} weight="duotone" className="text-slate-700 dark:text-white" />
                 <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center">
@@ -218,7 +263,7 @@ export function Header() {
               {/* Profile */}
               <motion.button
                 whileTap={{ scale: 0.92 }}
-                className="w-9 h-9 rounded-xl bg-linear-to-br from-blue-500 to-indigo-600 shadow-[0_4px_12px_rgba(59,130,246,0.4)] flex items-center justify-center"
+                className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-[0_4px_12px_rgba(59,130,246,0.4)] flex items-center justify-center"
               >
                 <User size={16} weight="duotone" className="text-white" />
               </motion.button>

@@ -1,13 +1,40 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "../styles/breakpoints/tablet.css";
 
 @custom-variant dark (&:is(.dark *));
+
+/* Hide scrollbar utility - works on all browsers */
+.scrollbar-none {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;     /* Firefox */
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none !important;             /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Also hide scrollbar on all scrollable containers in studio */
+.studio-scroll {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.studio-scroll::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-display: var(--font-display);
+  /* System font stack - works offline, native feel */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-display: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -145,4 +172,111 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
+}
+
+/* ============================================================================
+   PERFORMANCE OPTIMIZATIONS - Home Page Loading Animations
+   ============================================================================ */
+
+/* Shimmer loading animation for skeleton cards */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Optimized card entrance animation using CSS instead of JS */
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-card-slide-in {
+  animation: cardSlideIn 0.4s ease-out forwards;
+}
+
+/* Shimmer animation for skeleton loaders */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Staggered delays for cards */
+.animate-card-delay-1 { animation-delay: 0.1s; opacity: 0; }
+.animate-card-delay-2 { animation-delay: 0.2s; opacity: 0; }
+.animate-card-delay-3 { animation-delay: 0.3s; opacity: 0; }
+.animate-card-delay-4 { animation-delay: 0.4s; opacity: 0; }
+.animate-card-delay-5 { animation-delay: 0.5s; opacity: 0; }
+
+/* GPU-accelerated transforms for smoother animations */
+.will-change-transform {
+  will-change: transform;
+}
+
+/* ========================================
+ * REDUCED MOTION PREFERENCES (Accessibility)
+ * Respects system setting for users who prefer reduced motion
+ * ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable all CSS animations */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Shimmer and card animations */
+  .animate-shimmer,
+  .animate-card-slide-in {
+    animation: none !important;
+  }
+  
+  /* Card delays - show immediately */
+  .animate-card-delay-1,
+  .animate-card-delay-2,
+  .animate-card-delay-3,
+  .animate-card-delay-4,
+  .animate-card-delay-5 {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+  
+  /* Disable scroll behavior animations */
+  html {
+    scroll-behavior: auto !important;
+  }
+  
+  /* Disable Tailwind animate utilities */
+  .animate-spin,
+  .animate-ping,
+  .animate-pulse,
+  .animate-bounce {
+    animation: none !important;
+  }
+  
+  /* Keep focus indicators but no animation */
+  *:focus {
+    outline-offset: 2px;
+    transition: none !important;
+  }
 }

@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import {
   Engine,
   Scene,
@@ -26,18 +26,13 @@ import {
 import { ShadowOnlyMaterial } from "@babylonjs/materials";
 import "@babylonjs/loaders/glTF";
 import { SceneLoader } from "@babylonjs/core/Loading/sceneLoader";
-import {
-  Crosshair,
-  Sparkle,
-  Cpu,
-  Leaf,
-  Wallet,
-  Play,
-  MagnifyingGlass,
-  Wrench,
-  Cube,
-  MagicWand,
-} from "@phosphor-icons/react";
+
+// Modular Components
+import { LoadingSpinner, PipelineCards, ProjectDashboard, ZoomControls, useLOD, applyLODToEngine, getEngineOptions } from "./onboarding";
+import type { PipelineState } from "./onboarding";
+
+// Icons (for future pipeline stages)
+import { MagnifyingGlass, Wrench, Cube } from "@phosphor-icons/react";
 
 // ============================================================================
 // TYPES
@@ -47,8 +42,6 @@ interface OnboardingHeroProps {
   onComplete?: () => void;
   modelUrl?: string;
 }
-
-type PipelineState = "idle" | "scanning" | "repairing" | "rendering" | "complete";
 
 // ============================================================================
 // MASTER LOGIC: DUAL-MESH CLIP PLANE ANIMATION
@@ -73,6 +66,15 @@ export function OnboardingHero({
   modelUrl = "/models/hero-drone-final.glb",
 }: OnboardingHeroProps) {
   // ========================================================================
+  // LOD - Level of Detail configuration (only use initial config for scene)
+  // ========================================================================
+  const { config: lodConfig, capability, getModelUrl } = useLOD();
+  
+  // Store initial LOD config to prevent scene recreation on orientation change
+  const initialLodConfigRef = useRef(lodConfig);
+  const initialGetModelUrlRef = useRef(getModelUrl);
+
+  // ========================================================================
   // REFS - Babylon Objects
   // ========================================================================
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -89,6 +91,7 @@ export function OnboardingHero({
   // Lighting Refs
   const spotLightRef = useRef<SpotLight | null>(null);
   const glowLayerRef = useRef<GlowLayer | null>(null);
+  const cameraRef = useRef<ArcRotateCamera | null>(null); // For tablet zoom adjustment
 
   // Bounding Box
   const boundsRef = useRef({ minY: -1, maxY: 1 });
@@ -107,6 +110,8 @@ export function OnboardingHero({
   const [isLoading, setIsLoading] = useState(true);
   const [isSceneReady, setIsSceneReady] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const [showProjectDashboard, setShowProjectDashboard] = useState(false);
+  const [isSlideOut, setIsSlideOut] = useState(false);
 
   // Keep pipelineStateRef in sync for render loop access
   useEffect(() => {
@@ -114,18 +119,50 @@ export function OnboardingHero({
   }, [pipelineState]);
 
   // ========================================================================
-  // SCENE INITIALIZATION
+  // ZOOM CONTROLS HANDLER
+  // ========================================================================
+  const handleZoomChange = useCallback((zoomLevel: number) => {
+    if (cameraRef.current) {
+      // Smooth zoom animation
+      const currentRadius = cameraRef.current.radius;
+      const targetRadius = zoomLevel;
+      const steps = 10;
+      let step = 0;
+      
+      const animate = () => {
+        step++;
+        const progress = step / steps;
+        const easeProgress = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+        cameraRef.current!.radius = currentRadius + (targetRadius - currentRadius) * easeProgress;
+        
+        if (step < steps) {
+          requestAnimationFrame(animate);
+        }
+      };
+      
+      requestAnimationFrame(animate);
+    }
+  }, []);
+
+  // ========================================================================
+  // SCENE INITIALIZATION (runs only once, not on orientation change)
   // ========================================================================
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    // Create Engine with alpha channel for transparency
+    // Use initial LOD config (prevents scene recreation on rotate)
+    const currentLodConfig = initialLodConfigRef.current;
+    const currentGetModelUrl = initialGetModelUrlRef.current;
+
+    // Create Engine with LOD-based options
+    const engineOptions = getEngineOptions(currentLodConfig);
     const engine = new Engine(canvasRef.current, true, {
-      preserveDrawingBuffer: true,
+      ...engineOptions,
       stencil: true,
-      antialias: true,
-      alpha: true, // Enable transparent background
     }, true); // adaptToDeviceRatio
+    
+    // Apply LOD hardware scaling
+    applyLODToEngine(engine, currentLodConfig);
     engineRef.current = engine;
 
     // Create Scene with transparent background
@@ -151,6 +188,18 @@ export function OnboardingHero({
     camera.upperRadiusLimit = 10;
     camera.wheelPrecision = 50;
     camera.panningSensibility = 0; // Disable panning
+
+    // Tablet zoom out - model appears smaller on tablets for better visibility
+    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1280;
+    if (isTablet) {
+      const isPortrait = window.innerHeight > window.innerWidth;
+      // Portrait: zoom out more (cards at bottom take space)
+      // Landscape: slight zoom out
+      camera.radius = isPortrait ? 7 : 6;
+      camera.lowerRadiusLimit = isPortrait ? 5 : 4;
+      camera.upperRadiusLimit = 12;
+    }
+    cameraRef.current = camera; // Store ref for resize handler
 
     // ====================================================================
     // LIGHTING
@@ -181,17 +230,20 @@ export function OnboardingHero({
     spotLight.intensity = 1.0;
     spotLightRef.current = spotLight;
 
-    // Shadow Generator
-    const shadowGenerator = new ShadowGenerator(2048, spotLight);
+    // Shadow Generator - LOD based quality
+    const shadowGenerator = new ShadowGenerator(currentLodConfig.shadowQuality, spotLight);
     shadowGenerator.useBlurExponentialShadowMap = true;
-    shadowGenerator.blurKernel = 32;
+    shadowGenerator.blurKernel = currentLodConfig.level === "high" ? 32 : currentLodConfig.level === "medium" ? 16 : 8;
 
-    // Glow Layer - Foggy/Hazy bloom effect (soft spread-out glow)
-    const glowLayer = new GlowLayer("glow", scene, {
-      mainTextureFixedSize: 1024,  // Better quality
-      blurKernelSize: 64           // High = Foggier/Softer spread
-    });
-    glowLayer.intensity = 2.5;     // Strength of the fog
+    // Glow Layer - Conditional based on LOD (disabled on low-end devices)
+    let glowLayer: GlowLayer | null = null;
+    if (currentLodConfig.glowEnabled) {
+      glowLayer = new GlowLayer("glow", scene, {
+        mainTextureFixedSize: currentLodConfig.level === "high" ? 1024 : 512,
+        blurKernelSize: currentLodConfig.level === "high" ? 64 : 32
+      });
+      glowLayer.intensity = 2.5;
+    }
     glowLayerRef.current = glowLayer;
 
     // ====================================================================
@@ -221,7 +273,7 @@ export function OnboardingHero({
     wireframeMaterialRef.current = wireframeMat;
 
     // ====================================================================
-    // LOAD MODEL
+    // LOAD MODEL - Always use original model file, only adjust rendering quality
     // ====================================================================
     const loadModel = async () => {
       setIsLoading(true);
@@ -230,6 +282,11 @@ export function OnboardingHero({
         const lastSlash = modelUrl.lastIndexOf("/");
         const folderPath = modelUrl.substring(0, lastSlash + 1);
         const fileName = modelUrl.substring(lastSlash + 1);
+
+        // Log LOD decision (dev only)
+        if (process.env.NODE_ENV === "development") {
+          console.log(`[LOD] Level: ${currentLodConfig.level}, Model: ${fileName}`);
+        }
 
         const result = await SceneLoader.ImportMeshAsync(
           "",
@@ -462,19 +519,65 @@ export function OnboardingHero({
       scene.render();
     });
 
-    // Resize handler
-    const handleResize = () => engine.resize();
+    // Resize handler - also adjusts camera zoom for tablet orientation changes
+    let resizeTimeout: ReturnType<typeof setTimeout> | null = null;
+    
+    const handleResize = () => {
+      // Debounce resize to let DOM settle after orientation change
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      
+      resizeTimeout = setTimeout(() => {
+        // Force canvas to recalculate dimensions
+        if (canvasRef.current) {
+          const rect = canvasRef.current.getBoundingClientRect();
+          canvasRef.current.width = rect.width * window.devicePixelRatio;
+          canvasRef.current.height = rect.height * window.devicePixelRatio;
+        }
+        
+        engine.resize();
+        
+        // Adjust camera zoom on tablet orientation change
+        if (cameraRef.current) {
+          const isTablet = window.innerWidth >= 768 && window.innerWidth < 1280;
+          const isDesktop = window.innerWidth >= 1280;
+          
+          if (isTablet) {
+            const isPortrait = window.innerHeight > window.innerWidth;
+            cameraRef.current.radius = isPortrait ? 7 : 6;
+            cameraRef.current.lowerRadiusLimit = isPortrait ? 5 : 4;
+            cameraRef.current.upperRadiusLimit = 12;
+          } else if (isDesktop) {
+            // Reset to desktop defaults
+            cameraRef.current.radius = 5;
+            cameraRef.current.lowerRadiusLimit = 3;
+            cameraRef.current.upperRadiusLimit = 10;
+          }
+        }
+      }, 150); // 150ms delay for orientation animation to complete
+    };
+    
+    // Also listen for orientation change specifically
+    const handleOrientationChange = () => {
+      // Orientation change needs more time for iOS/Android to update viewport
+      setTimeout(handleResize, 300);
+    };
+    
     window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleOrientationChange);
 
     // Cleanup
     return () => {
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleOrientationChange);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
       scene.dispose();
       engine.dispose();
     };
+    // NOTE: Only modelUrl triggers scene recreation, NOT orientation/LOD changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modelUrl]);
 
   // ========================================================================
@@ -718,7 +821,8 @@ export function OnboardingHero({
   // ========================================================================
   // HANDLER: Get Started
   // ========================================================================
-  const handleGetStarted = useCallback(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _handleGetStarted = useCallback(() => {
     setShowUpload(true);
     setTimeout(() => {
       onComplete?.();
@@ -726,9 +830,10 @@ export function OnboardingHero({
   }, [onComplete]);
 
   // ========================================================================
-  // UI HELPERS
+  // UI HELPERS (Reserved for future use)
   // ========================================================================
-  const getButtonText = (stage: string): string => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _getButtonText = (stage: string): string => {
     const stageProgress =
       stage === "scan"
         ? progress.scan
@@ -757,7 +862,8 @@ export function OnboardingHero({
     return "Start";
   };
 
-  const isButtonDisabled = (stage: string): boolean => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _isButtonDisabled = (stage: string): boolean => {
     if (pipelineState === "scanning" || pipelineState === "repairing" || pipelineState === "rendering") {
       return true;
     }
@@ -768,9 +874,33 @@ export function OnboardingHero({
   };
 
   // ========================================================================
-  // RENDER UI
+  // ACTION COMPLETE - Slide transition to Project Dashboard
   // ========================================================================
-  const pipelineStages = [
+  const handleActionComplete = useCallback(() => {
+    // Start slide out animation
+    setIsSlideOut(true);
+    
+    // After slide out, show project dashboard
+    setTimeout(() => {
+      setShowProjectDashboard(true);
+    }, 400);
+  }, []);
+
+  // Handle back from Project Dashboard
+  const handleBackFromDashboard = useCallback(() => {
+    setShowProjectDashboard(false);
+    
+    // After dashboard slides out, slide content back in
+    setTimeout(() => {
+      setIsSlideOut(false);
+    }, 100);
+  }, []);
+
+  // ========================================================================
+  // RENDER UI (Reserved for future use)
+  // ========================================================================
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _pipelineStages = [
     {
       id: "scan",
       title: "Stage 1: Diagnosis",
@@ -799,547 +929,65 @@ export function OnboardingHero({
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* 3D Canvas - Ends before right card area (card won't affect canvas) */}
+      {/* Main Content Wrapper - Slides left when action complete */}
       <div 
-        className="absolute top-0 bottom-0 left-0 right-[350px] bg-transparent"
-        style={{ transform: "translateX(-100px)" }}
+        className="absolute inset-0 transition-transform duration-500 ease-out"
+        style={{ 
+          transform: isSlideOut ? 'translateX(-100%)' : 'translateX(0)',
+        }}
       >
-        <canvas
-          ref={canvasRef}
-          className="w-full h-full bg-transparent outline-none focus:outline-none active:outline-none ring-0 border-none"
-          style={{ 
-            touchAction: "none",
-            background: "transparent",
-            outline: "none",
-            border: "none",
-          }}
-          tabIndex={-1}
+        {/* 3D Canvas - Full screen on mobile, side panel on tablets, full desktop layout */}
+        <div 
+          className="absolute inset-0 bottom-[40vh] sm:bottom-[35vh] xl:bottom-0 xl:right-[350px] bg-transparent xl:-translate-x-[100px] tablet-canvas-wrapper"
+        >
+          <canvas
+            ref={canvasRef}
+            className="w-full h-full bg-transparent outline-none focus:outline-none active:outline-none ring-0 border-none"
+            style={{ 
+              touchAction: "none",
+              background: "transparent",
+              outline: "none",
+              border: "none",
+            }}
+            tabIndex={-1}
+          />
+        </div>
+
+        {/* Loading Overlay - Modular Component */}
+        <AnimatePresence>
+          {isLoading && <LoadingSpinner />}
+        </AnimatePresence>
+
+        {/* Zoom Controls - Tablet Landscape Only */}
+        <ZoomControls
+          onZoomChange={handleZoomChange}
+          minZoom={3}
+          maxZoom={12}
+          initialZoom={6}
         />
+
+        {/* Right Panel - Modular Pipeline Cards */}
+        <AnimatePresence>
+          {isSceneReady && !showUpload && (
+            <PipelineCards
+              pipelineState={pipelineState}
+              progress={progress}
+              onScan={animateScan}
+              onRepair={animateRepair}
+              onRender={animateRender}
+              onActionComplete={handleActionComplete}
+            />
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Loading Overlay - Transparent with floating spinner */}
+      {/* Project Dashboard - Slides in from right */}
       <AnimatePresence>
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none"
-          >
-            {/* Floating loader - no background box */}
-            <motion.div 
-              className="flex flex-col items-center"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {/* Spinner with glow effect */}
-              <div className="relative">
-                <div className="w-16 h-16 border-4 border-cyan-500/30 rounded-full" />
-                <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-cyan-500 rounded-full animate-spin" />
-                {/* Glow */}
-                <div className="absolute inset-0 w-16 h-16 bg-cyan-500/20 rounded-full blur-xl" />
-              </div>
-              {/* Text with subtle shadow for readability */}
-              <p className="mt-4 text-slate-600 font-mono text-sm tracking-wider drop-shadow-sm">
-                Loading...
-              </p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Right Panel - 5 Premium Pipeline Cards (2-Column Grid) */}
-      <AnimatePresence>
-        {isSceneReady && !showUpload && (
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 50 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="absolute right-4 top-24 bottom-0 w-[560px] overflow-y-auto [&::-webkit-scrollbar]:hidden"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {/* 2-Column Grid Layout */}
-            <div className="grid grid-cols-2 gap-3 pb-6">
-              
-              {/* Card 1: Auto-Diagnostic */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="p-4 rounded-xl backdrop-blur-xl transition-all duration-300 relative"
-                style={{
-                  background: pipelineState === "scanning" 
-                    ? "linear-gradient(145deg, rgba(59,130,246,0.12) 0%, rgba(59,130,246,0.04) 100%)"
-                    : progress.scan >= 100
-                    ? "linear-gradient(145deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.04) 100%)"
-                    : "linear-gradient(145deg, rgba(255,255,255,0.85) 0%, rgba(248,250,252,0.75) 100%)",
-                  boxShadow: "0 4px 24px -2px rgba(0,0,0,0.08)"
-                }}
-              >
-                {/* Gradient Border */}
-                <div 
-                  className="absolute inset-0 rounded-xl pointer-events-none"
-                  style={{
-                    padding: "1.5px",
-                    background: "linear-gradient(145deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.25) 40%, rgba(255,255,255,0.08) 70%, rgba(255,255,255,0.15) 100%)",
-                    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                    WebkitMaskComposite: "xor",
-                    maskComposite: "exclude"
-                  }}
-                />
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <Crosshair 
-                      size={36} 
-                      weight="duotone" 
-                      className={`${
-                        progress.scan >= 100 
-                          ? "text-green-500" 
-                          : pipelineState === "scanning" 
-                          ? "text-blue-500" 
-                          : "text-blue-500"
-                      }`}
-                      style={{
-                        filter: progress.scan >= 100 
-                          ? "drop-shadow(0 0 8px rgba(34,197,94,0.6)) drop-shadow(0 0 16px rgba(34,197,94,0.4))"
-                          : "drop-shadow(0 0 8px rgba(59,130,246,0.6)) drop-shadow(0 0 16px rgba(59,130,246,0.4))"
-                      }}
-                    />
-                    <div>
-                      <h3 className="font-semibold text-slate-800 dark:text-white text-sm">Auto-Diagnostic</h3>
-                      <span className="text-[10px] text-slate-400 dark:text-slate-300">Mesh Analysis</span>
-                    </div>
-                  </div>
-                  <span className="text-[10px] px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded-full text-slate-500 dark:text-slate-300">~5s</span>
-                </div>
-                
-                {/* Mesh Health */}
-                <div className="mb-2.5">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-500 dark:text-slate-300">Mesh Health</span>
-                    <span className="font-medium text-slate-700 dark:text-white">{progress.scan >= 100 ? "100%" : `${progress.scan.toFixed(0)}%`}</span>
-                  </div>
-                  <div className="h-1.5 bg-slate-200/50 rounded-full overflow-hidden">
-                    <motion.div
-                      className={progress.scan >= 100 ? "h-full bg-green-500" : "h-full bg-blue-500"}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progress.scan}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* Issues Found/Fixed */}
-                <div className="grid grid-cols-3 gap-1.5 mb-3 text-center">
-                  <div className={`rounded-lg py-1.5 bg-white dark:bg-slate-800/50 border ${progress.scan >= 100 ? "border-green-200 dark:border-green-500/30" : "border-amber-200 dark:border-amber-500/30"}`}>
-                    <p className={`text-sm font-bold ${progress.scan >= 100 ? "text-green-600" : "text-amber-600"}`}>
-                      {progress.scan >= 100 ? "0" : "12"}
-                    </p>
-                    <span className="text-[8px] text-slate-500 dark:text-slate-400">Edges</span>
-                  </div>
-                  <div className={`rounded-lg py-1.5 bg-white dark:bg-slate-800/50 border ${progress.scan >= 100 ? "border-green-200 dark:border-green-500/30" : "border-amber-200 dark:border-amber-500/30"}`}>
-                    <p className={`text-sm font-bold ${progress.scan >= 100 ? "text-green-600" : "text-amber-600"}`}>
-                      {progress.scan >= 100 ? "0" : "8"}
-                    </p>
-                    <span className="text-[8px] text-slate-500 dark:text-slate-400">Holes</span>
-                  </div>
-                  <div className={`rounded-lg py-1.5 bg-white dark:bg-slate-800/50 border ${progress.scan >= 100 ? "border-green-200 dark:border-green-500/30" : "border-amber-200 dark:border-amber-500/30"}`}>
-                    <p className={`text-sm font-bold ${progress.scan >= 100 ? "text-green-600" : "text-amber-600"}`}>
-                      {progress.scan >= 100 ? "0" : "4"}
-                    </p>
-                    <span className="text-[8px] text-slate-500 dark:text-slate-400">Normals</span>
-                  </div>
-                </div>
-
-                {/* Action Button */}
-                <button
-                  onClick={animateScan}
-                  disabled={pipelineState !== "idle" || progress.scan > 0}
-                  className={`w-full py-2.5 px-4 rounded-xl text-xs font-medium flex items-center justify-center gap-2 transition-all backdrop-blur-md border shadow-lg shadow-black/30 antialiased ${
-                    progress.scan >= 100
-                      ? "bg-green-500/20 border-green-400/40 text-white"
-                      : pipelineState === "scanning"
-                      ? "bg-blue-500/20 border-blue-400/40 text-white"
-                      : pipelineState !== "idle" || progress.scan > 0
-                      ? "bg-slate-800/40 border-slate-600/30 text-slate-400 cursor-not-allowed"
-                      : "bg-slate-900/60 border-white/20 text-white hover:bg-slate-800/70 hover:border-white/30"
-                  }`}
-                >
-                  {pipelineState === "scanning" ? (
-                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Play className="w-3.5 h-3.5 text-white" weight="fill" />
-                  )}
-                  <span className="tracking-wide">{progress.scan >= 100 ? "✓ Scanned" : pipelineState === "scanning" ? "Scanning..." : "Run Scan"}</span>
-                </button>
-              </motion.div>
-
-              {/* Card 2: AI Auto-Heal */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="p-4 rounded-xl backdrop-blur-xl transition-all duration-300 relative"
-                style={{
-                  background: pipelineState === "repairing" 
-                    ? "linear-gradient(145deg, rgba(168,85,247,0.12) 0%, rgba(168,85,247,0.04) 100%)"
-                    : progress.repair >= 100
-                    ? "linear-gradient(145deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.04) 100%)"
-                    : "linear-gradient(145deg, rgba(255,255,255,0.85) 0%, rgba(248,250,252,0.75) 100%)",
-                  boxShadow: "0 4px 24px -2px rgba(0,0,0,0.08)"
-                }}
-              >
-                {/* Gradient Border */}
-                <div 
-                  className="absolute inset-0 rounded-xl pointer-events-none"
-                  style={{
-                    padding: "1.5px",
-                    background: "linear-gradient(145deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.25) 40%, rgba(255,255,255,0.08) 70%, rgba(255,255,255,0.15) 100%)",
-                    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                    WebkitMaskComposite: "xor",
-                    maskComposite: "exclude"
-                  }}
-                />
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <Sparkle 
-                      size={36} 
-                      weight="duotone" 
-                      className={`${
-                        progress.repair >= 100 
-                          ? "text-green-500" 
-                          : pipelineState === "repairing" 
-                          ? "text-purple-500" 
-                          : "text-purple-500"
-                      }`}
-                      style={{
-                        filter: progress.repair >= 100 
-                          ? "drop-shadow(0 0 8px rgba(34,197,94,0.6)) drop-shadow(0 0 16px rgba(34,197,94,0.4))"
-                          : "drop-shadow(0 0 8px rgba(168,85,247,0.6)) drop-shadow(0 0 16px rgba(168,85,247,0.4))"
-                      }}
-                    />
-                    <div>
-                      <h3 className="font-semibold text-slate-800 dark:text-white text-sm">AI Auto-Heal</h3>
-                      <span className="text-[10px] text-slate-400 dark:text-slate-300">Mesh Repair</span>
-                    </div>
-                  </div>
-                  <span className="text-[10px] px-2 py-0.5 bg-purple-100 dark:bg-purple-500/20 rounded-full text-purple-600 dark:text-purple-400">~4s</span>
-                </div>
-
-                {/* Repair Stats */}
-                <div className="grid grid-cols-2 gap-2 mb-2 text-xs">
-                  <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-600/30 rounded-lg px-3 py-2">
-                    <span className="text-slate-400 dark:text-slate-400 text-[10px]">Algorithm</span>
-                    <p className="font-medium text-slate-700 dark:text-white">LibIGL</p>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-600/30 rounded-lg px-3 py-2">
-                    <span className="text-slate-400 dark:text-slate-400 text-[10px]">Precision</span>
-                    <p className="font-medium text-slate-700 dark:text-white">High</p>
-                  </div>
-                </div>
-
-                {/* Issues Fixed */}
-                <div className={`rounded-lg py-2 px-3 mb-2 bg-white dark:bg-slate-800/50 border ${progress.repair >= 100 ? "border-green-200 dark:border-green-500/30" : "border-slate-200 dark:border-slate-600/30"}`}>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400">Issues Fixed</span>
-                    <span className={`text-sm font-bold ${progress.repair >= 100 ? "text-green-600" : "text-slate-400"}`}>
-                      {progress.repair >= 100 ? "24/24" : "0/24"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Progress */}
-                <div className="h-1.5 bg-slate-200/50 rounded-full overflow-hidden mb-2">
-                  <motion.div
-                    className={progress.repair >= 100 ? "h-full bg-green-500" : "h-full bg-purple-500"}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress.repair}%` }}
-                  />
-                </div>
-
-                {/* Action Button */}
-                <button
-                  onClick={animateRepair}
-                  disabled={progress.scan < 100 || progress.repair >= 100}
-                  className={`w-full py-2.5 px-4 rounded-xl text-xs font-medium flex items-center justify-center gap-2 transition-all backdrop-blur-md border shadow-lg shadow-black/30 antialiased ${
-                    progress.repair >= 100
-                      ? "bg-green-500/20 border-green-400/40 text-white"
-                      : pipelineState === "repairing"
-                      ? "bg-purple-500/20 border-purple-400/40 text-white"
-                      : progress.scan < 100
-                      ? "bg-slate-800/40 border-slate-600/30 text-slate-400 cursor-not-allowed"
-                      : "bg-slate-900/60 border-white/20 text-white hover:bg-slate-800/70 hover:border-white/30"
-                  }`}
-                >
-                  {pipelineState === "repairing" ? (
-                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <MagicWand className="w-3.5 h-3.5 text-white" weight="fill" />
-                  )}
-                  <span className="tracking-wide">{progress.repair >= 100 ? "✓ Repaired" : pipelineState === "repairing" ? "Healing..." : "Auto-Heal"}</span>
-                </button>
-              </motion.div>
-
-              {/* Card 3: GPU Render - Spans full width */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="col-span-2 p-4 rounded-xl backdrop-blur-xl transition-all duration-300 relative"
-                style={{
-                  background: pipelineState === "rendering" 
-                    ? "linear-gradient(145deg, rgba(6,182,212,0.12) 0%, rgba(6,182,212,0.04) 100%)"
-                    : progress.render >= 100
-                    ? "linear-gradient(145deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.04) 100%)"
-                    : "linear-gradient(145deg, rgba(255,255,255,0.85) 0%, rgba(248,250,252,0.75) 100%)",
-                  boxShadow: "0 4px 24px -2px rgba(0,0,0,0.08)"
-                }}
-              >
-                {/* Gradient Border */}
-                <div 
-                  className="absolute inset-0 rounded-xl pointer-events-none"
-                  style={{
-                    padding: "1.5px",
-                    background: "linear-gradient(145deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.25) 40%, rgba(255,255,255,0.08) 70%, rgba(255,255,255,0.15) 100%)",
-                    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                    WebkitMaskComposite: "xor",
-                    maskComposite: "exclude"
-                  }}
-                />
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <Cpu 
-                      size={36} 
-                      weight="duotone" 
-                      className={`${progress.render >= 100 ? "text-green-500" : pipelineState === "rendering" ? "text-cyan-500" : "text-slate-400"}`}
-                      style={{
-                        filter: progress.render >= 100 
-                          ? "drop-shadow(0 0 8px rgba(34,197,94,0.6)) drop-shadow(0 0 16px rgba(34,197,94,0.4))"
-                          : pipelineState === "rendering"
-                          ? "drop-shadow(0 0 8px rgba(6,182,212,0.6)) drop-shadow(0 0 16px rgba(6,182,212,0.4))"
-                          : "none"
-                      }}
-                    />
-                    <div>
-                      <h3 className="font-semibold text-slate-800 dark:text-white text-sm">Cloud Render</h3>
-                      <span className="text-[10px] text-slate-400 dark:text-slate-300">GPU Accelerated</span>
-                    </div>
-                  </div>
-                  <span className="text-[10px] px-2 py-0.5 bg-cyan-100 dark:bg-cyan-500/20 rounded-full text-cyan-600 dark:text-cyan-400">~8s</span>
-                </div>
-
-                {/* GPU Info Grid - Horizontal */}
-                <div className="flex gap-2 mb-2 text-xs">
-                  <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-600/30 rounded-lg px-3 py-2 flex-1">
-                    <span className="text-slate-400 dark:text-slate-400 text-[10px]">GPU</span>
-                    <p className="font-medium text-slate-700 dark:text-white">A100</p>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-600/30 rounded-lg px-3 py-2 flex-1">
-                    <span className="text-slate-400 dark:text-slate-400 text-[10px]">Samples</span>
-                    <p className="font-medium text-slate-700 dark:text-white">1024</p>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-600/30 rounded-lg px-3 py-2 flex-1">
-                    <span className="text-slate-400 dark:text-slate-400 text-[10px]">Resolution</span>
-                    <p className="font-medium text-slate-700 dark:text-white">4K</p>
-                  </div>
-                  <div className={`rounded-lg px-3 py-2 flex-1 bg-white dark:bg-slate-800/50 border ${progress.render >= 100 ? "border-green-200 dark:border-green-500/30" : "border-slate-200 dark:border-slate-600/30"}`}>
-                    <span className="text-slate-400 dark:text-slate-400 text-[10px]">Output</span>
-                    <p className={`font-medium ${progress.render >= 100 ? "text-green-600" : "text-slate-400"}`}>
-                      {progress.render >= 100 ? "Ready" : "---"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Render Stats */}
-                <div className="grid grid-cols-3 gap-2 mb-2">
-                  <div className={`rounded-lg py-1.5 text-center bg-white dark:bg-slate-800/50 border ${progress.render >= 100 ? "border-green-200 dark:border-green-500/30" : "border-slate-200 dark:border-slate-600/30"}`}>
-                    <p className={`text-sm font-bold ${progress.render >= 100 ? "text-green-600" : "text-slate-400"}`}>
-                      {progress.render >= 100 ? "1024" : "0"}
-                    </p>
-                    <span className="text-[8px] text-slate-500 dark:text-slate-400">Samples Done</span>
-                  </div>
-                  <div className={`rounded-lg py-1.5 text-center bg-white dark:bg-slate-800/50 border ${progress.render >= 100 ? "border-green-200 dark:border-green-500/30" : "border-slate-200 dark:border-slate-600/30"}`}>
-                    <p className={`text-sm font-bold ${progress.render >= 100 ? "text-green-600" : "text-slate-400"}`}>
-                      {progress.render >= 100 ? "3.2s" : "---"}
-                    </p>
-                    <span className="text-[8px] text-slate-500 dark:text-slate-400">Render Time</span>
-                  </div>
-                  <div className={`rounded-lg py-1.5 text-center bg-white dark:bg-slate-800/50 border ${progress.render >= 100 ? "border-green-200 dark:border-green-500/30" : "border-slate-200 dark:border-slate-600/30"}`}>
-                    <p className={`text-sm font-bold ${progress.render >= 100 ? "text-green-600" : "text-slate-400"}`}>
-                      {progress.render >= 100 ? "12MB" : "---"}
-                    </p>
-                    <span className="text-[8px] text-slate-500 dark:text-slate-400">File Size</span>
-                  </div>
-                </div>
-
-                {/* Progress */}
-                <div className="h-1.5 bg-slate-200/50 rounded-full overflow-hidden mb-3">
-                  <motion.div
-                    className={progress.render >= 100 ? "h-full bg-green-500" : "h-full bg-cyan-500"}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress.render}%` }}
-                  />
-                </div>
-
-                {/* Action Button */}
-                <button
-                  onClick={animateRender}
-                  disabled={progress.repair < 100 || progress.render >= 100}
-                  className={`w-full py-2.5 px-4 rounded-xl text-xs font-medium flex items-center justify-center gap-2 transition-all backdrop-blur-md border shadow-lg shadow-black/30 antialiased ${
-                    progress.render >= 100
-                      ? "bg-green-500/20 border-green-400/40 text-white"
-                      : pipelineState === "rendering"
-                      ? "bg-cyan-500/20 border-cyan-400/40 text-white"
-                      : progress.repair < 100
-                      ? "bg-slate-800/40 border-slate-600/30 text-slate-400 cursor-not-allowed"
-                      : "bg-slate-900/60 border-white/20 text-white hover:bg-slate-800/70 hover:border-white/30"
-                  }`}
-                >
-                  {pipelineState === "rendering" ? (
-                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Cpu className="w-3.5 h-3.5 text-white" weight="fill" />
-                  )}
-                  <span className="tracking-wide">{progress.render >= 100 ? "✓ Complete" : pipelineState === "rendering" ? "Rendering..." : "Cloud Render"}</span>
-                </button>
-              </motion.div>
-
-              {/* Card 4: CO₂ Estimate */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 }}
-                className="p-4 rounded-xl backdrop-blur-xl relative"
-                style={{
-                  background: "linear-gradient(145deg, rgba(16,185,129,0.12) 0%, rgba(16,185,129,0.04) 100%)",
-                  boxShadow: "0 4px 24px -2px rgba(0,0,0,0.08)"
-                }}
-              >
-                {/* Gradient Border */}
-                <div 
-                  className="absolute inset-0 rounded-xl pointer-events-none"
-                  style={{
-                    padding: "1.5px",
-                    background: "linear-gradient(145deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.25) 40%, rgba(255,255,255,0.08) 70%, rgba(255,255,255,0.15) 100%)",
-                    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                    WebkitMaskComposite: "xor",
-                    maskComposite: "exclude"
-                  }}
-                />
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <Leaf 
-                      size={36} 
-                      weight="duotone" 
-                      className="text-emerald-500"
-                      style={{
-                        filter: "drop-shadow(0 0 8px rgba(16,185,129,0.6)) drop-shadow(0 0 16px rgba(16,185,129,0.4))"
-                      }}
-                    />
-                    <div>
-                      <h3 className="font-semibold text-slate-800 dark:text-white text-sm">CO₂ Estimate</h3>
-                      <span className="text-[10px] text-slate-400 dark:text-slate-300">Sustainability</span>
-                    </div>
-                  </div>
-                  <span className="text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 rounded-full text-emerald-600 dark:text-emerald-400">Eco</span>
-                </div>
-
-                {/* CO2 Value */}
-                <div className="text-center py-2 bg-white dark:bg-slate-800/50 border border-emerald-200 dark:border-emerald-500/30 rounded-lg mb-2">
-                  <span className="text-2xl font-bold text-emerald-600">0.2g</span>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400">CO₂ Emitted</p>
-                </div>
-
-                {/* Eco Stats */}
-                <div className="grid grid-cols-2 gap-1.5 mb-2">
-                  <div className="bg-white dark:bg-slate-800/50 border border-emerald-200 dark:border-emerald-500/30 rounded-lg py-1.5 text-center">
-                    <p className="text-xs font-bold text-emerald-600">92%</p>
-                    <span className="text-[8px] text-slate-500 dark:text-slate-400">Efficiency</span>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800/50 border border-emerald-200 dark:border-emerald-500/30 rounded-lg py-1.5 text-center">
-                    <p className="text-xs font-bold text-emerald-600">Green</p>
-                    <span className="text-[8px] text-slate-500 dark:text-slate-400">Node Type</span>
-                  </div>
-                </div>
-
-                <p className="text-[9px] text-slate-400 dark:text-slate-500 text-center">Powered by renewable energy</p>
-              </motion.div>
-
-              {/* Card 5: Cost Estimate */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
-                className="p-4 rounded-xl backdrop-blur-xl relative"
-                style={{
-                  background: "linear-gradient(145deg, rgba(245,158,11,0.12) 0%, rgba(245,158,11,0.04) 100%)",
-                  boxShadow: "0 4px 24px -2px rgba(0,0,0,0.08)"
-                }}
-              >
-                {/* Gradient Border */}
-                <div 
-                  className="absolute inset-0 rounded-xl pointer-events-none"
-                  style={{
-                    padding: "1.5px",
-                    background: "linear-gradient(145deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.25) 40%, rgba(255,255,255,0.08) 70%, rgba(255,255,255,0.15) 100%)",
-                    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                    WebkitMaskComposite: "xor",
-                    maskComposite: "exclude"
-                  }}
-                />
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <Wallet 
-                      size={36} 
-                      weight="duotone" 
-                      className="text-amber-500"
-                      style={{
-                        filter: "drop-shadow(0 0 8px rgba(245,158,11,0.6)) drop-shadow(0 0 16px rgba(245,158,11,0.4))"
-                      }}
-                    />
-                    <div>
-                      <h3 className="font-semibold text-slate-800 dark:text-white text-sm">Cost Estimate</h3>
-                      <span className="text-[10px] text-slate-400 dark:text-slate-300">Billing</span>
-                    </div>
-                  </div>
-                  <span className="text-[10px] px-2 py-0.5 bg-amber-100 dark:bg-amber-500/20 rounded-full text-amber-600 dark:text-amber-400">USD</span>
-                </div>
-
-                {/* Cost Breakdown */}
-                <div className="space-y-1.5 mb-2 text-[10px]">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">Diagnostic</span>
-                    <span className="font-medium text-slate-700 dark:text-white">$0.005</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">AI-Repair</span>
-                    <span className="font-medium text-slate-700 dark:text-white">$0.020</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">GPU Render</span>
-                    <span className="font-medium text-slate-700 dark:text-white">$0.015</span>
-                  </div>
-                </div>
-
-                {/* Total */}
-                <div className="bg-white dark:bg-slate-800/50 border border-amber-200 dark:border-amber-500/30 rounded-lg p-2 mb-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-semibold text-slate-700 dark:text-white">Total</span>
-                    <span className="text-lg font-bold text-amber-600">$0.040</span>
-                  </div>
-                  <div className="flex justify-between text-[9px] mt-1">
-                    <span className="text-slate-400 dark:text-slate-500">Credits</span>
-                    <span className="font-medium text-amber-600">40 CR</span>
-                  </div>
-                </div>
-
-                <p className="text-[9px] text-slate-400 dark:text-slate-500 text-center">⚡ Pay-per-use pricing</p>
-              </motion.div>
-
-            </div>
-          </motion.div>
+        {showProjectDashboard && (
+          <ProjectDashboard 
+            isVisible={showProjectDashboard}
+            onBack={handleBackFromDashboard}
+          />
         )}
       </AnimatePresence>
     </div>

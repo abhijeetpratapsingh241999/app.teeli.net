@@ -1,19 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
-// Apple-like premium font - Geist by Vercel
-const geist = Geist({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
-
-// Mono font for code/numbers
-const geistMono = Geist_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-});
+// System fonts (no network dependency - works offline)
+// Uses native system fonts like SF Pro, Segoe UI, etc.
 
 export const metadata: Metadata = {
   title: "Teeli - High-End 3D Rendering SaaS",
@@ -27,7 +17,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geist.variable} ${geistMono.variable} font-sans antialiased`}>
+      <body 
+        className="font-sans antialiased"
+        suppressHydrationWarning
+      >
         <ThemeProvider>
           {children}
         </ThemeProvider>

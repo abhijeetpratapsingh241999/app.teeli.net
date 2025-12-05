@@ -1,23 +1,21 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { 
-  Engine, 
-  Scene, 
-  ArcRotateCamera, 
-  DirectionalLight,
-  HemisphericLight, 
-  Vector3,
-  MeshBuilder,
-  PBRMaterial,
-  Color3,
-  Color4,
-  ShadowGenerator,
-  Mesh,
-  AbstractMesh,
-} from "@babylonjs/core";
-import "@babylonjs/loaders/glTF";
+// Selective ES6 imports for smaller bundle
+import { Engine } from "@babylonjs/core/Engines/engine";
+import { Scene } from "@babylonjs/core/scene";
+import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
+import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
+import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
+import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
+import { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
+import { Color3, Color4 } from "@babylonjs/core/Maths/math.color";
+import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
+import { Mesh } from "@babylonjs/core/Meshes/mesh";
+import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
 import { SceneLoader } from "@babylonjs/core/Loading/sceneLoader";
+import "@babylonjs/loaders/glTF";
 
 interface Viewer3DProps {
   step: number; // 0: raw, 1: scanned, 2: fixed, 3: rendered

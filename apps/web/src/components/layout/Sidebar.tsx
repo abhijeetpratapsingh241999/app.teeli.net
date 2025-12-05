@@ -4,23 +4,21 @@ import { motion } from "framer-motion";
 import {
   House,
   FolderOpen,
-  Package,
-  Upload,
-  User,
+  Cube,
+  Image,
+  Cloud,
+  CreditCard,
   Gear,
-  SquaresFour,
-  CubeFocus,
 } from "@phosphor-icons/react";
 import { usePathname, useRouter } from "next/navigation";
 
 const menuItems = [
-  { icon: House, label: "Home", id: "home", path: "/home" },
-  { icon: CubeFocus, label: "The Editor", id: "editor", path: "/editor" },
+  { icon: House, label: "Dashboard", id: "home", path: "/home" },
   { icon: FolderOpen, label: "Projects", id: "projects", path: "/projects" },
-  { icon: Package, label: "Assets", id: "assets", path: "/assets" },
-  { icon: Upload, label: "Upload", id: "upload", path: "/upload" },
-  { icon: User, label: "Profile", id: "profile", path: "/profile" },
-  { icon: SquaresFour, label: "Gallery", id: "gallery", path: "/gallery" },
+  { icon: Cube, label: "3D Studio", id: "studio", path: "/studio" },
+  { icon: Image, label: "Renders", id: "renders", path: "/renders" },
+  { icon: Cloud, label: "Cloud Storage", id: "storage", path: "/storage" },
+  { icon: CreditCard, label: "Billing", id: "billing", path: "/billing" },
   { icon: Gear, label: "Settings", id: "settings", path: "/settings" },
 ];
 
